@@ -15,6 +15,8 @@ namespace ServiceStack.RateLimit.Redis
 
     public class RateLimitFeature : IPlugin
     {
+        public static string RequestIdHeader { get; set; }= "x-mac-requestid";
+
         public string StatusDescription { get; set; } = "Too many requests.";
         public int LimitStatusCode { get; set; } = 429;
         public ILimitProvider LimitProvider { get; set; }

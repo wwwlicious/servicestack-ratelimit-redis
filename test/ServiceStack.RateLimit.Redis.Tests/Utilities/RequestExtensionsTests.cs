@@ -23,17 +23,34 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
         }
 
         [Fact]
-        public void GetRequestId_ReturnsEmptyString_IfNullRequest()
+        public void GetRequestId_ReturnsNull_IfNullRequest()
         {
             IRequest request = null;
-            request.GetRequestId().Should().BeNullOrEmpty();
+            request.GetRequestId().Should().BeNull();
         }
 
         [Fact]
-        public void GetRequestId_ReturnsEmptyString_IfHeaderMissing()
+        public void GetRequestId_ReturnsNull_IfHeaderMissing()
         {
             var request = new MockHttpRequest();
-            request.GetRequestId().Should().BeNullOrEmpty();
+            request.GetRequestId().Should().BeNull();
+        }
+
+        [Theory, InlineAutoData]
+        public void GetRequestId_UsesHeaderNameFromFeature(string header)
+        {
+            string defaultHeaderName = RateLimitFeature.RequestIdHeader;
+
+            const string headerName = "sunkilmoon";
+            RateLimitFeature.RequestIdHeader = headerName;
+
+            var request = new MockHttpRequest();
+            request.Headers.Add(headerName, header);
+
+            var value = request.GetRequestId();
+            value.Should().Be(header);
+
+            RateLimitFeature.RequestIdHeader = defaultHeaderName;
         }
     }
 }

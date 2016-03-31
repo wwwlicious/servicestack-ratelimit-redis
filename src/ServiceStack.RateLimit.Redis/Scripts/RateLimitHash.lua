@@ -20,10 +20,14 @@ local limitBreached = false
 local total		= 0
 
 local function isNewRequest()
+	local requestId = payload.RequestId
+	if (requestId = nil) then
+		return false
+	end
+
 	-- The key is kept per 5 minute block
 	local requestTtl = 300;
 	local requestTs = math.floor(ts / requestTtl)
-	local requestId = payload.RequestId
 
 	-- get key for this bucket and previous (as in Xsec buckets so could have hit cut-off to new bucket)
 	local requestKey = 'requestid:' .. requestTs
