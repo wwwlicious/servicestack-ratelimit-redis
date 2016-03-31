@@ -10,8 +10,8 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using FakeItEasy;
     using FluentAssertions;
     using Interfaces;
-    using Models;
     using Ploeh.AutoFixture.Xunit2;
+    using Redis.Models;
     using Testing;
     using Xunit;
 
