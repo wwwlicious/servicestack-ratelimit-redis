@@ -17,39 +17,33 @@ namespace ServiceStack.RateLimit.Redis
     {
         public string StatusDescription { get; set; } = "Too many requests.";
         public int LimitStatusCode { get; set; } = 429;
+        public ILimitProvider LimitProvider { get; set; }
+        public ILimitKeyGenerator KeyGenerator { get; set; }
 
         private string _scriptSha1;
 
-        private readonly IRedisClientsManager _redisClientsManager;
-        private readonly ILimitProvider _limitProvider;
-        private readonly ILimitKeyGenerator _keyGenerator;
-        private readonly ILog log;
+        private readonly IRedisClientsManager redisClientsManager;
+        
+        private readonly ILog log = LogManager.GetLogger(typeof (RateLimitFeature));
 
-        // TODO Have some of these dependencies added as defaults.
-        public RateLimitFeature(IRedisClientsManager redisClientsManager, ILimitProvider limitProvider,
-            ILimitKeyGenerator keyGenerator)
+        public RateLimitFeature(IRedisClientsManager redisClientsManager)
         {
             redisClientsManager.ThrowIfNull(nameof(redisClientsManager));
-            limitProvider.ThrowIfNull(nameof(limitProvider));
-            keyGenerator.ThrowIfNull(nameof(keyGenerator));
 
-            _limitProvider = limitProvider;
-            _redisClientsManager = redisClientsManager;
-            _keyGenerator = keyGenerator;
-
-            log = LogManager.GetLogger(typeof (RateLimitFeature));
+            this.redisClientsManager = redisClientsManager;
         }
 
         public void Register(IAppHost appHost)
         {
-            // TODO We may need to have the check done at PreRequestFilter level to play nice with Gateway. 
-            // Maybe configure to be able to do it PreRequest for Gateway but GlobalRequest for rest??
+            EnsureDependencies(appHost);
+
+            // NOTE Maybe configure to be able to do it PreRequest for Gateway but GlobalRequest for rest??
             appHost.PreRequestFilters.Add(ProcessRequest);
         }
 
         public virtual void ProcessRequest(IRequest request, IResponse response)
         {
-            var limits = _limitProvider.GetLimits(request);
+            var limits = LimitProvider.GetLimits(request);
 
             if (limits == null)
             {
@@ -86,7 +80,7 @@ namespace ServiceStack.RateLimit.Redis
                 {
                     var request = response.Request;
                     log.Debug(
-                        $"Rate limit exceeded for {request.AbsoluteUri}, user {_keyGenerator.GetConsumerId(request)}. Returning status code: {LimitStatusCode}");
+                        $"Rate limit exceeded for {request.AbsoluteUri}, user {KeyGenerator.GetConsumerId(request)}. Returning status code: {LimitStatusCode}");
                 }
                 response.StatusCode = LimitStatusCode;
                 response.StatusDescription = StatusDescription;
@@ -96,12 +90,12 @@ namespace ServiceStack.RateLimit.Redis
 
         private RateLimitResult GetLimitResult(IRequest request, Limits limits)
         {
-            string consumerId = _keyGenerator.GetConsumerId(request);
-            string requestId = _keyGenerator.GetRequestId(request);
+            string consumerId = KeyGenerator.GetConsumerId(request);
+            string requestId = KeyGenerator.GetRequestId(request);
 
             string args = GetLuaArgs(limits, request);
 
-            using (var client = _redisClientsManager.GetClient())
+            using (var client = redisClientsManager.GetClient())
             {
                 RedisText result = null;
                 try
@@ -145,7 +139,7 @@ namespace ServiceStack.RateLimit.Redis
 
         private string GetSha1()
         {
-            var scriptFromConfig = _limitProvider.GetRateLimitScriptId();
+            var scriptFromConfig = LimitProvider.GetRateLimitScriptId();
             if (!string.IsNullOrWhiteSpace(scriptFromConfig))
             {
                 log.Debug($"Got Lua script sha1 {scriptFromConfig} from config");
@@ -155,9 +149,27 @@ namespace ServiceStack.RateLimit.Redis
             if (string.IsNullOrEmpty(_scriptSha1))
             {
                 log.Info("Registering Lua rate limiting script");
-                _scriptSha1 = LuaScriptHelpers.RegisterLuaScript(_redisClientsManager);
+                _scriptSha1 = LuaScriptHelpers.RegisterLuaScript(redisClientsManager);
             }
             return _scriptSha1;
+        }
+
+        private void EnsureDependencies(IAppHost appHost)
+        {
+            if (KeyGenerator == null)
+            {
+                appHost.RegisterAs<LimitKeyGenerator, ILimitKeyGenerator>();
+                KeyGenerator = appHost.TryResolve<ILimitKeyGenerator>();
+            }
+
+            if (LimitProvider == null)
+            {
+                appHost.RegisterAs<LimitProviderBase, ILimitProvider>();
+                LimitProvider = appHost.TryResolve<ILimitProvider>();
+            }
+
+            LimitProvider.ThrowIfNull(nameof(LimitProvider));
+            KeyGenerator.ThrowIfNull(nameof(KeyGenerator));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace ServiceStack.RateLimit.Redis.Utilities
         public static string GetLuaScript()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "GatewayPoc.RateLimit.Scripts.RateLimitHash.lua";
+            var resourceName = "ServiceStack.RateLimit.Redis.Scripts.RateLimitHash.lua";
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             using (StreamReader reader = new StreamReader(stream))

@@ -7,6 +7,7 @@ namespace ServiceStack.RateLimit.Redis.Utilities
 
     public static class RequestExtensions
     {
+        // TODO This shouldn't be hardcoded. Or should have a dependency on the request correlation Id?
         private const string RequestIdHeader = "x-mac-requestid";
 
         public static string GetRequestId(this IRequest request)
