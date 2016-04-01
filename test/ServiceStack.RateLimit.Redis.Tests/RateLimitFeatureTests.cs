@@ -258,17 +258,65 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory, InlineAutoData]
-        public void ProcessRequest_CallsLuaScript(string sha1)
+        public void ProcessRequest_ExecutesLuaScript(string sha1)
         {
             var mockHttpRequest = new MockHttpRequest();
             
             var client = A.Fake<IRedisClient>();
             A.CallTo(() => redisManager.GetClient()).Returns(client);
+            A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
 
             var feature = GetSut();
             feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
-            A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
+            A.CallTo(() => client.ExecLuaSha(sha1, A<string[]>.Ignored, A<string[]>.Ignored)).MustHaveHappened();
+        }
+
+        [Fact]
+        public void ProcessRequest_Returns429_IfLimitBreached()
+        {
+            var client = A.Fake<IRedisClient>();
+            A.CallTo(() => client.ExecLuaSha(A<string>.Ignored, A<string[]>.Ignored, A<string[]>.Ignored))
+                .Returns(new RedisText { Text = new RateLimitResult { Access = false }.ToJson() });
+
+            var feature = GetSut();
+            var response = new MockHttpResponse();
+
+            feature.ProcessRequest(new MockHttpRequest(), response, null);
+
+            response.StatusCode.Should().Be(429);
+        }
+
+        [Fact]
+        public void ProcessRequest_ReturnsCustomCode_IfSetAndLimitBreached()
+        {
+            const int statusCode = 503;
+            var client = A.Fake<IRedisClient>();
+            A.CallTo(() => client.ExecLuaSha(A<string>.Ignored, A<string[]>.Ignored, A<string[]>.Ignored))
+                .Returns(new RedisText { Text = new RateLimitResult { Access = false }.ToJson() });
+
+            var feature = GetSut();
+            feature.LimitStatusCode = statusCode;
+            var response = new MockHttpResponse();
+
+            feature.ProcessRequest(new MockHttpRequest(), response, null);
+
+            response.StatusCode.Should().Be(statusCode);
+        }
+
+        [Fact]
+        public void ProcessRequest_CallsRequestIdDelegate_IfProvided()
+        {
+            bool called = false;
+            var feature = GetSut();
+            feature.RequestGenerator = request =>
+            {
+                called = true;
+                return "124";
+            };
+
+            feature.ProcessRequest(new MockHttpRequest(), new MockHttpResponse(), null);
+            called.Should().BeTrue();
         }
     }
 }

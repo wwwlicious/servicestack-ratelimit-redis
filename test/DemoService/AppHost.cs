@@ -10,7 +10,6 @@ namespace DemoService
     using ServiceStack.Caching;
     using ServiceStack.Logging;
     using ServiceStack.RateLimit.Redis;
-    using ServiceStack.RateLimit.Redis.Interfaces;
     using ServiceStack.Redis;
 
     public class AppHost : AppSelfHostBase

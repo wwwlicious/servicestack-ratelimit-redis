@@ -15,8 +15,8 @@ namespace ServiceStack.RateLimit.Redis
 
     public class RateLimitFeature : IPlugin
     {
-        public static string RequestIdHeader { get; set; }= "x-mac-requestid";
-
+        public static string RequestIdHeader { get; set; } = "x-mac-requestid";
+        public Func<IRequest, string> RequestGenerator { get; set; }
         public string StatusDescription { get; set; } = "Too many requests.";
         public int LimitStatusCode { get; set; } = 429;
         public ILimitProvider LimitProvider { get; set; }
@@ -126,15 +126,20 @@ namespace ServiceStack.RateLimit.Redis
             return new RateLimitResult();
         }
 
-        private static string GetLuaArgs(Limits limits, IRequest request)
+        private string GetLuaArgs(Limits limits, IRequest request)
         {
-            var args = new { Time = limits, Stamp = SecondsFromUnixTime(), RequestId = request.GetRequestId() };
+            var args = new { Time = limits, Stamp = SecondsFromUnixTime(), RequestId = GetRequestId(request) };
             return args.ToJson();
+        }
+
+        private string GetRequestId(IRequest request)
+        {
+            return RequestGenerator == null ? request.GetRequestId() : RequestGenerator(request);
         }
 
         private static int SecondsFromUnixTime()
         {
-            var timeSpan = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+            var timeSpan = DateTime.UtcNow - new DateTime(1970, 1, 1);
             return (int) timeSpan.TotalSeconds;
         }
 

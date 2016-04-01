@@ -39,7 +39,7 @@ namespace ServiceStack.RateLimit.Redis
 
         public virtual string GetRequestId(IRequest request)
         {
-            return request.OperationName.ToLowerInvariant();
+            return request.OperationName?.ToLowerInvariant();
         }
 
         public virtual string GetConsumerId(IRequest request)
@@ -57,7 +57,7 @@ namespace ServiceStack.RateLimit.Redis
                 throw new AuthenticationException("You must be authenticated to access this service");
             }
 
-            return userSession.UserAuthId.ToLowerInvariant();
+            return userSession.UserAuthId?.ToLowerInvariant();
         }
     }
 }

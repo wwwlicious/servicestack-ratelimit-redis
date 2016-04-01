@@ -61,7 +61,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var keyGenerator = GetGenerator();
             var consumerId = keyGenerator.GetConsumerId(request);
 
-            consumerId.Should().Be(authSession.UserAuthId);
+            consumerId.Should().Be(authSession.UserAuthId.ToLower());
         }
 
         [Fact]
@@ -91,11 +91,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var keyGenerator = GetGenerator();
             var keys = keyGenerator.GetConfigKeysForRequest(request);
 
-            keys.ToList()[index].Should().Be(key);
+            keys.ToList()[index].Should().Be(key.ToLower());
         }
 
         [Fact]
-        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys()
+        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys_def()
         {
             MockHttpRequest request = new MockHttpRequest();
             SetupAuthenticatedSession("123", request);
@@ -107,7 +107,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory]
-        [InlineData("lmt:usr:userId", 0)]
+        [InlineData("lmt:usr:userid", 0)]
         [InlineData("lmt:usr:default", 1)]
         public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys(string key, int index)
         {
