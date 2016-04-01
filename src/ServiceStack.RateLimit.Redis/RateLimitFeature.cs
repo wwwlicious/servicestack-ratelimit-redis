@@ -15,10 +15,26 @@ namespace ServiceStack.RateLimit.Redis
 
     public class RateLimitFeature : IPlugin
     {
+        /// <summary>
+        /// Default header to use for uniquely identifying a request. Default "x-mac-requestid"
+        /// </summary>
         public static string RequestIdHeader { get; set; } = "x-mac-requestid";
+
+        /// <summary>
+        /// Function for customising how request ids are generated
+        /// </summary>
         public Func<IRequest, string> RequestGenerator { get; set; }
+
+        /// <summary>
+        /// Message returned if limit has been reached. Default "Too Many Requests"
+        /// </summary>
         public string StatusDescription { get; set; } = "Too many requests.";
+
+        /// <summary>
+        /// Status code returned if limit has been reached. Default 429 (Too Many Requests)
+        /// </summary>
         public int LimitStatusCode { get; set; } = 429;
+
         public ILimitProvider LimitProvider { get; set; }
         public ILimitKeyGenerator KeyGenerator { get; set; }
 
@@ -162,20 +178,13 @@ namespace ServiceStack.RateLimit.Redis
 
         private void EnsureDependencies(IAppHost appHost)
         {
+            // NOTE These are not just instantiated as they have dependencies on other objects (e.g. IAppSettings)
+            
             if (KeyGenerator == null)
-            {
-                appHost.RegisterAs<LimitKeyGenerator, ILimitKeyGenerator>();
-                KeyGenerator = appHost.TryResolve<ILimitKeyGenerator>();
-            }
+                KeyGenerator = new LimitKeyGenerator();
 
             if (LimitProvider == null)
-            {
-                appHost.RegisterAs<LimitProviderBase, ILimitProvider>();
-                LimitProvider = appHost.TryResolve<ILimitProvider>();
-            }
-
-            LimitProvider.ThrowIfNull(nameof(LimitProvider));
-            KeyGenerator.ThrowIfNull(nameof(KeyGenerator));
+                LimitProvider = new LimitProviderBase(KeyGenerator, appHost.AppSettings);
         }
     }
 }

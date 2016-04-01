@@ -44,11 +44,6 @@ namespace DemoService
                 }));
 
             Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>()));
-            /*Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>())
-            {
-                LimitProvider = Container.Resolve<ILimitProvider>(),
-                KeyGenerator = Container.Resolve<ILimitKeyGenerator>()
-            });*/
         }
 
         private void SetupDependencies()
@@ -58,9 +53,6 @@ namespace DemoService
             Container.Register<IRedisClientsManager>(new BasicRedisClientManager(redisConnection));
 
             Container.Register(AppSettings);
-
-            /*Container.RegisterAs<LimitKeyGenerator, ILimitKeyGenerator>();
-            Container.RegisterAs<LimitProviderBase, ILimitProvider>();*/
 
             // Setup basic auth
             Container.Register<ICacheClient>(new MemoryCacheClient());
