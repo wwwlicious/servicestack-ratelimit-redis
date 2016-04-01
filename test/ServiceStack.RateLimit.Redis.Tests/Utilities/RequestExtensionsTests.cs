@@ -39,10 +39,10 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
         [Theory, InlineAutoData]
         public void GetRequestId_UsesHeaderNameFromFeature(string header)
         {
-            string defaultHeaderName = RateLimitFeature.RequestIdHeader;
+            string defaultHeaderName = RateLimitFeature.CorrelationIdHeader;
 
             const string headerName = "sunkilmoon";
-            RateLimitFeature.RequestIdHeader = headerName;
+            RateLimitFeature.CorrelationIdHeader = headerName;
 
             var request = new MockHttpRequest();
             request.Headers.Add(headerName, header);
@@ -50,7 +50,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
             var value = request.GetRequestId();
             value.Should().Be(header);
 
-            RateLimitFeature.RequestIdHeader = defaultHeaderName;
+            RateLimitFeature.CorrelationIdHeader = defaultHeaderName;
         }
     }
 }

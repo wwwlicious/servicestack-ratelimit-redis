@@ -18,11 +18,11 @@ namespace ServiceStack.RateLimit.Redis.Models
     /// <summary>
     /// Detail of individual limit from Lua script
     /// </summary>
-    [DebuggerDisplay("{Duration} - {Current}/{Limit}")]
+    [DebuggerDisplay("{Seconds}s - {Current}/{Limit}")]
     public class RateLimitTimeResult
     {
         public int Limit { get; set; }
-        public int Duration { get; set; } // TODO Get a nicer representation of this
+        public int Seconds { get; set; }
         public int Current { get; set; }
         public bool User { get; set; }
     }

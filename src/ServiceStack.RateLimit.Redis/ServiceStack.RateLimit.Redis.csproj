@@ -69,7 +69,7 @@
     <Compile Include="Interfaces\ILimitProvider.cs" />
     <Compile Include="LimitKeyGenerator.cs" />
     <Compile Include="LimitProviderBase.cs" />
-    <Compile Include="Models\LimitDuration.cs" />
+    <Compile Include="Models\LimitPerSecond.cs" />
     <Compile Include="Models\LimitGroup.cs" />
     <Compile Include="Models\Limits.cs" />
     <Compile Include="Models\RateLimitResult.cs" />

@@ -65,7 +65,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             var limits = limitProvider.GetLimits(new MockHttpRequest());
 
-            limits.Request.Durations.Count().Should().BeGreaterThan(0);
+            limits.Request.Limits.Count().Should().BeGreaterThan(0);
         }
 
         [Fact]

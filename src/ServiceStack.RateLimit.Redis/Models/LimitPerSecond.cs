@@ -4,9 +4,9 @@
 namespace ServiceStack.RateLimit.Redis.Models
 {
     /// <summary>
-    /// Represents a limit for a duration of time
+    /// Represents a limit for a number of seconds
     /// </summary>
-    public class LimitDuration
+    public class LimitPerSecond
     {
         /// <summary>
         /// Limit of how many requests per duration
@@ -14,9 +14,9 @@ namespace ServiceStack.RateLimit.Redis.Models
         public int Limit { get; set; }
 
         /// <summary>
-        /// Time period limit refers to (seconds)
+        /// No. of seconds limit refers to
         /// </summary>
-        public int Duration { get; set; }
+        public int Seconds { get; set; }
 
         /// <summary>
         /// The precision for storing sliding expiry
@@ -26,7 +26,7 @@ namespace ServiceStack.RateLimit.Redis.Models
 
         public override string ToString()
         {
-            return $"{Limit},{Duration},{Precision ?? 0}";
+            return $"{Limit},{Seconds},{Precision ?? 0}";
         }
     }
 }

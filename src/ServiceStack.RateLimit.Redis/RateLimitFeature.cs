@@ -18,12 +18,12 @@ namespace ServiceStack.RateLimit.Redis
         /// <summary>
         /// Default header to use for uniquely identifying a request. Default "x-mac-requestid"
         /// </summary>
-        public static string RequestIdHeader { get; set; } = "x-mac-requestid";
+        public static string CorrelationIdHeader { get; set; } = "x-mac-requestid";
 
         /// <summary>
-        /// Function for customising how request ids are generated
+        /// Function for customising how request correlation ids are extracted from request
         /// </summary>
-        public Func<IRequest, string> RequestGenerator { get; set; }
+        public Func<IRequest, string> CorrelationIdExtractor { get; set; }
 
         /// <summary>
         /// Message returned if limit has been reached. Default "Too Many Requests"
@@ -79,9 +79,9 @@ namespace ServiceStack.RateLimit.Redis
             {
                 // TODO Tidy this up to have a nicer representation time rather than the number of seconds (duration)
                 var postfix = rateLimitResultByTime.User ? "-user" : string.Empty;
-                response.AddHeader(HttpHeaders.RateLimitFormat.Fmt(rateLimitResultByTime.Duration) + postfix,
+                response.AddHeader(HttpHeaders.RateLimitFormat.Fmt(rateLimitResultByTime.Seconds) + postfix,
                     rateLimitResultByTime.Limit.ToString());
-                response.AddHeader(HttpHeaders.RateCurrentFormat.Fmt(rateLimitResultByTime.Duration) + postfix,
+                response.AddHeader(HttpHeaders.RateCurrentFormat.Fmt(rateLimitResultByTime.Seconds) + postfix,
                     rateLimitResultByTime.Current.ToString());
             }
         }
@@ -150,7 +150,7 @@ namespace ServiceStack.RateLimit.Redis
 
         private string GetRequestId(IRequest request)
         {
-            return RequestGenerator == null ? request.GetRequestId() : RequestGenerator(request);
+            return CorrelationIdExtractor == null ? request.GetRequestId() : CorrelationIdExtractor(request);
         }
 
         private static int SecondsFromUnixTime()

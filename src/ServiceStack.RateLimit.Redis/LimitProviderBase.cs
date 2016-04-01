@@ -19,7 +19,7 @@ namespace ServiceStack.RateLimit.Redis
         private const int DefaultPerMinute = 10;
         private const int DefaultPerHour = 30;
         private const int DefaultPerDay = 100;
-        private readonly LimitGroup defaultLimitDurations;
+        private readonly LimitGroup defaultLimits;
         private readonly IAppSettings appSettings;
         private readonly ILog log;
 
@@ -34,13 +34,13 @@ namespace ServiceStack.RateLimit.Redis
             log = LogManager.GetLogger(typeof(LimitProviderBase));
 
             // This is purely to ensure that we always have a default limit
-            defaultLimitDurations = new LimitGroup
+            defaultLimits = new LimitGroup
             {
-                Durations = new List<LimitDuration>
+                Limits = new List<LimitPerSecond>
                 {
-                    new LimitDuration { Duration = 60, Limit = DefaultPerMinute },
-                    new LimitDuration { Duration = 3600, Limit = DefaultPerHour },
-                    new LimitDuration { Duration = 86400, Limit = DefaultPerDay }
+                    new LimitPerSecond { Seconds = 60, Limit = DefaultPerMinute },
+                    new LimitPerSecond { Seconds = 3600, Limit = DefaultPerHour },
+                    new LimitPerSecond { Seconds = 86400, Limit = DefaultPerDay }
                 }
             };
         }
@@ -53,7 +53,7 @@ namespace ServiceStack.RateLimit.Redis
             return new Limits
             {
                 // Return default if none found
-                Request = requestLimits ?? defaultLimitDurations,
+                Request = requestLimits ?? defaultLimits,
                 User = userLimits
             };
         }

@@ -58,10 +58,10 @@ if user ~= nil then
 	-- Before processing user requests, check if this 'requestId' has been processed
 	if (isNewRequest()) then
 
-		local userTimes	= user['Durations']
+		local userTimes	= user['Limits']
 		for i = 1, table.maxn(userTimes) do
 			local limit = tonumber(userTimes[i]['Limit'])
-			local duration = tonumber(userTimes[i]['Duration'])
+			local duration = tonumber(userTimes[i]['Seconds'])
 
 			local key = consumer .. ':' .. duration .. ':' .. math.floor(ts / duration)
 
@@ -80,7 +80,7 @@ if user ~= nil then
 			-- 'durResult is a table of results for this durations. Build that up and set it later
 			durResult[count] = {}
 			durResult[count]['limit'] = limit
-			durResult[count]['duration'] = duration
+			durResult[count]['Seconds'] = duration
 			durResult[count]['current'] = total
 			durResult[count]['user'] = true
 			count = count + 1
@@ -91,10 +91,10 @@ end
 --next iterate over all of the resource limits provided 
 local requestData = payload['Time']['Request']
 if request ~= nil then
-	local requestTimes = requestData['Durations']
+	local requestTimes = requestData['Limits']
 	for i = 1, table.maxn(requestTimes) do
 		local limit = tonumber(requestTimes[i]['Limit'])
-		local duration = tonumber(requestTimes[i]['Duration'])
+		local duration = tonumber(requestTimes[i]['Seconds'])
 	
 		--only check limits that have been set
 		local key = request .. ':' .. duration .. ':' .. math.floor(ts / duration)
@@ -114,7 +114,7 @@ if request ~= nil then
 		-- 'durResult is a table of results for this durations. Build that up and set it later
 		durResult[count] = {}
 		durResult[count]['limit'] = limit
-		durResult[count]['duration'] = duration
+		durResult[count]['Seconds'] = duration
 		durResult[count]['current'] = total
 		durResult[count]['user'] = false
 		count = count + 1

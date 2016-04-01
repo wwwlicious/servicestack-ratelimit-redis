@@ -9,7 +9,7 @@ namespace ServiceStack.RateLimit.Redis.Utilities
     {
         public static string GetRequestId(this IRequest request)
         {
-            return request?.Headers[RateLimitFeature.RequestIdHeader];
+            return request?.Headers[RateLimitFeature.CorrelationIdHeader];
         }
     }
 }

@@ -7,6 +7,6 @@ namespace ServiceStack.RateLimit.Redis.Models
 
     public class LimitGroup
     {
-        public IEnumerable<LimitDuration> Durations { get; set; }
+        public IEnumerable<LimitPerSecond> Limits { get; set; }
     }
 }

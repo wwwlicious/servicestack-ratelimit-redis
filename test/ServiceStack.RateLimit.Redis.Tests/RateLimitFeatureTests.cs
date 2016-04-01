@@ -233,7 +233,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             bool called = false;
             var feature = GetSut();
-            feature.RequestGenerator = request =>
+            feature.CorrelationIdExtractor = request =>
             {
                 called = true;
                 return "124";
