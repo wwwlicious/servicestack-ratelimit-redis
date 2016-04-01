@@ -21,7 +21,7 @@ local total		= 0
 
 local function isNewRequest()
 	local requestId = payload.RequestId
-	if (requestId = nil) then
+	if (requestId == nil) then
 		return false
 	end
 

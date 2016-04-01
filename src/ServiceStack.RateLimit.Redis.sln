@@ -9,6 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{79090EA0-8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RateLimit.Redis.Tests", "..\test\ServiceStack.RateLimit.Redis.Tests\ServiceStack.RateLimit.Redis.Tests.csproj", "{C342ABCF-A2D5-45C0-8612-55FB32627E9E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{04920DDA-F431-4A8E-B8DD-3A21BBF5B558}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoService", "..\test\DemoService\DemoService.csproj", "{B0A54830-AA7B-4919-97CD-81D58C270EC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +27,17 @@ Global
 		{C342ABCF-A2D5-45C0-8612-55FB32627E9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C342ABCF-A2D5-45C0-8612-55FB32627E9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C342ABCF-A2D5-45C0-8612-55FB32627E9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0A54830-AA7B-4919-97CD-81D58C270EC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0A54830-AA7B-4919-97CD-81D58C270EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0A54830-AA7B-4919-97CD-81D58C270EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0A54830-AA7B-4919-97CD-81D58C270EC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C342ABCF-A2D5-45C0-8612-55FB32627E9E} = {79090EA0-8D00-4B3A-8E56-3C63715CC18D}
+		{04920DDA-F431-4A8E-B8DD-3A21BBF5B558} = {79090EA0-8D00-4B3A-8E56-3C63715CC18D}
+		{B0A54830-AA7B-4919-97CD-81D58C270EC4} = {04920DDA-F431-4A8E-B8DD-3A21BBF5B558}
 	EndGlobalSection
 EndGlobal

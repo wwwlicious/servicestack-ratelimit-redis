@@ -29,7 +29,7 @@ namespace ServiceStack.RateLimit.Redis
             return new[] { userRequestKey, requestKey, DefaultConfigKey };
         }
 
-        public IEnumerable<string> GetConfigKeysForUser(IRequest request)
+        public virtual IEnumerable<string> GetConfigKeysForUser(IRequest request)
         {
             string userId = GetConsumerId(request);
 
@@ -39,11 +39,15 @@ namespace ServiceStack.RateLimit.Redis
 
         public virtual string GetRequestId(IRequest request)
         {
-            return request.OperationName;
+            return request.OperationName.ToLowerInvariant();
         }
 
         public virtual string GetConsumerId(IRequest request)
         {
+            // HERE: IF this is un as party of hte PreRequestFilter then we won't know who they are yet so will needs some sort of whitelisrt to be
+            // able to allow them to authenticate as it looks like the authentication is done once the DTO is deserialized so maybe it's just that the
+            // basic auth plugin that i'm using sucks?
+
             IAuthSession userSession = request.GetSession();
 
             // TODO This will need more love to authorize user rather than just verify authentication (not necessarily here but in general)
@@ -53,7 +57,7 @@ namespace ServiceStack.RateLimit.Redis
                 throw new AuthenticationException("You must be authenticated to access this service");
             }
 
-            return userSession.UserAuthId;
+            return userSession.UserAuthId.ToLowerInvariant();
         }
     }
 }

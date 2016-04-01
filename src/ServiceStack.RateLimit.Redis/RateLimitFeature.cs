@@ -39,11 +39,10 @@ namespace ServiceStack.RateLimit.Redis
         {
             EnsureDependencies(appHost);
 
-            // NOTE Maybe configure to be able to do it PreRequest for Gateway but GlobalRequest for rest??
-            appHost.PreRequestFilters.Add(ProcessRequest);
+            appHost.GlobalRequestFilters.Add(ProcessRequest);
         }
 
-        public virtual void ProcessRequest(IRequest request, IResponse response)
+        public virtual void ProcessRequest(IRequest request, IResponse response, object obj)
         {
             var limits = LimitProvider.GetLimits(request);
 

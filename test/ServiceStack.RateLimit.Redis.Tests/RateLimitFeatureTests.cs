@@ -172,15 +172,15 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Fact]
-        public void Register_AddsPreRequestFilter()
+        public void Register_AddsGlobalRequestFilter()
         {
             var appHost = A.Fake<IAppHost>();
-            appHost.PreRequestFilters.Count.Should().Be(0);
+            appHost.GlobalRequestFilters.Count.Should().Be(0);
 
             var feature = GetSut();
             feature.Register(appHost);
 
-            appHost.PreRequestFilters.Count.Should().Be(1);
+            appHost.GlobalRequestFilters.Count.Should().Be(1);
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             A.CallTo(() => limitProvider.GetLimits(mockHttpRequest)).Returns(null);
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             A.CallTo(() => limitProvider.GetLimits(mockHttpRequest)).MustHaveHappened();
         }
@@ -202,7 +202,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             A.CallTo(() => limitProvider.GetLimits(mockHttpRequest)).Returns(null);
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             // No assert here - not throwing is enough
         }
@@ -213,7 +213,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var mockHttpRequest = new MockHttpRequest();
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             A.CallTo(() => keyGenerator.GetConsumerId(mockHttpRequest)).MustHaveHappened();
         }
@@ -224,7 +224,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var mockHttpRequest = new MockHttpRequest();
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             A.CallTo(() => keyGenerator.GetRequestId(mockHttpRequest)).MustHaveHappened();
         }
@@ -235,7 +235,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var mockHttpRequest = new MockHttpRequest();
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             A.CallTo(() => limitProvider.GetRateLimitScriptId()).MustHaveHappened();
         }
@@ -252,7 +252,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             A.CallTo(() => redisManager.GetClient()).Returns(client);
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             A.CallTo(() => client.LoadLuaScript(A<string>.Ignored)).MustHaveHappened();
         }
@@ -266,7 +266,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             A.CallTo(() => redisManager.GetClient()).Returns(client);
 
             var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse());
+            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
 
             A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
         }

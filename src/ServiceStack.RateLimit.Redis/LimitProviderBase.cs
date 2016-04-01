@@ -37,11 +37,11 @@ namespace ServiceStack.RateLimit.Redis
             _defaultLimitDurations = new LimitGroup
             {
                 Durations = new List<LimitDuration>
-                    {
-                        new LimitDuration {Duration = 60, Limit = DefaultPerMinute},
-                        new LimitDuration {Duration = 3600, Limit = DefaultPerHour},
-                        new LimitDuration {Duration = 86400, Limit = DefaultPerDay}
-                    }
+                {
+                    new LimitDuration { Duration = 60, Limit = DefaultPerMinute },
+                    new LimitDuration { Duration = 3600, Limit = DefaultPerHour },
+                    new LimitDuration { Duration = 86400, Limit = DefaultPerDay }
+                }
             };
         }
 
