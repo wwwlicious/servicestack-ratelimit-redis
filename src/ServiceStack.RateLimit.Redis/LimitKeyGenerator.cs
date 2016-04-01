@@ -44,10 +44,6 @@ namespace ServiceStack.RateLimit.Redis
 
         public virtual string GetConsumerId(IRequest request)
         {
-            // HERE: IF this is un as party of hte PreRequestFilter then we won't know who they are yet so will needs some sort of whitelisrt to be
-            // able to allow them to authenticate as it looks like the authentication is done once the DTO is deserialized so maybe it's just that the
-            // basic auth plugin that i'm using sucks?
-
             IAuthSession userSession = request.GetSession();
 
             // TODO This will need more love to authorize user rather than just verify authentication (not necessarily here but in general)
