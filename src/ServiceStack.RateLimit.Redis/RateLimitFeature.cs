@@ -177,9 +177,7 @@ namespace ServiceStack.RateLimit.Redis
         }
 
         private void EnsureDependencies(IAppHost appHost)
-        {
-            // NOTE These are not just instantiated as they have dependencies on other objects (e.g. IAppSettings)
-            
+        {           
             if (KeyGenerator == null)
                 KeyGenerator = new LimitKeyGenerator();
 
