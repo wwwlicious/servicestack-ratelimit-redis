@@ -7,7 +7,7 @@ namespace ServiceStack.RateLimit.Redis.Utilities
 
     public static class RequestExtensions
     {
-        public static string GetRequestId(this IRequest request)
+        public static string GetRequestCorrelationId(this IRequest request)
         {
             return request?.Headers[RateLimitFeature.CorrelationIdHeader];
         }

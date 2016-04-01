@@ -13,31 +13,31 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     public class RequestExtensionsTests
     {
         [Theory, InlineAutoData]
-        public void GetRequestId_ReturnsRequestFromHeader(string header)
+        public void GetRequestCorrelationId_ReturnsRequestFromHeader(string header)
         {
             var request = new MockHttpRequest();
             request.Headers.Add("x-mac-requestid", header);
 
-            var value = request.GetRequestId();
+            var value = request.GetRequestCorrelationId();
             value.Should().Be(header);
         }
 
         [Fact]
-        public void GetRequestId_ReturnsNull_IfNullRequest()
+        public void GetRequestCorrelationId_ReturnsNull_IfNullRequest()
         {
             IRequest request = null;
-            request.GetRequestId().Should().BeNull();
+            request.GetRequestCorrelationId().Should().BeNull();
         }
 
         [Fact]
-        public void GetRequestId_ReturnsNull_IfHeaderMissing()
+        public void GetRequestCorrelationId_ReturnsNull_IfHeaderMissing()
         {
             var request = new MockHttpRequest();
-            request.GetRequestId().Should().BeNull();
+            request.GetRequestCorrelationId().Should().BeNull();
         }
 
         [Theory, InlineAutoData]
-        public void GetRequestId_UsesHeaderNameFromFeature(string header)
+        public void GetRequestCorrelationId_UsesHeaderNameFromFeature(string header)
         {
             string defaultHeaderName = RateLimitFeature.CorrelationIdHeader;
 
@@ -47,7 +47,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
             var request = new MockHttpRequest();
             request.Headers.Add(headerName, header);
 
-            var value = request.GetRequestId();
+            var value = request.GetRequestCorrelationId();
             value.Should().Be(header);
 
             RateLimitFeature.CorrelationIdHeader = defaultHeaderName;

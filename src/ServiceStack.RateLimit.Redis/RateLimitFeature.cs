@@ -144,13 +144,13 @@ namespace ServiceStack.RateLimit.Redis
 
         private string GetLuaArgs(Limits limits, IRequest request)
         {
-            var args = new { Time = limits, Stamp = SecondsFromUnixTime(), RequestId = GetRequestId(request) };
+            var args = new { Time = limits, Stamp = SecondsFromUnixTime(), RequestId = GetRequestCorrelationId(request) };
             return args.ToJson();
         }
 
-        private string GetRequestId(IRequest request)
+        private string GetRequestCorrelationId(IRequest request)
         {
-            return CorrelationIdExtractor == null ? request.GetRequestId() : CorrelationIdExtractor(request);
+            return CorrelationIdExtractor == null ? request.GetRequestCorrelationId() : CorrelationIdExtractor(request);
         }
 
         private static int SecondsFromUnixTime()
