@@ -5,11 +5,13 @@ namespace ServiceStack.RateLimit.Redis
 {
     using System;
     using System.Runtime.Serialization;
+    using Headers;
     using Interfaces;
     using Logging;
     using Models;
     using ServiceStack;
     using ServiceStack.Redis;
+    using Text;
     using Utilities;
     using Web;
 
@@ -38,7 +40,7 @@ namespace ServiceStack.RateLimit.Redis
         public ILimitProvider LimitProvider { get; set; }
         public ILimitKeyGenerator KeyGenerator { get; set; }
 
-        private string _scriptSha1;
+        private string scriptSha1;
 
         private readonly IRedisClientsManager redisClientsManager;
         
@@ -75,15 +77,16 @@ namespace ServiceStack.RateLimit.Redis
 
         private static void SetLimitHeaders(IResponse response, RateLimitResult result)
         {
-            foreach (var rateLimitResultByTime in result?.Results ?? new RateLimitTimeResult[0])
+            var headerResults = RateLimitHeader.Create(result?.Results);
+
+            var excludeTypeInfo = JsConfig.ExcludeTypeInfo;
+            foreach (var header in headerResults)
             {
-                // TODO Tidy this up to have a nicer representation time rather than the number of seconds (duration)
-                var postfix = rateLimitResultByTime.User ? "-user" : string.Empty;
-                response.AddHeader(HttpHeaders.RateLimitFormat.Fmt(rateLimitResultByTime.Seconds) + postfix,
-                    rateLimitResultByTime.Limit.ToString());
-                response.AddHeader(HttpHeaders.RateCurrentFormat.Fmt(rateLimitResultByTime.Seconds) + postfix,
-                    rateLimitResultByTime.Current.ToString());
+                JsConfig.ExcludeTypeInfo = true;
+                response.AddHeader(header.HeaderName, header.Limits.ToJson());
             }
+
+            JsConfig.ExcludeTypeInfo = excludeTypeInfo;
         }
 
         private void ProcessResult(IResponse response, RateLimitResult rateLimitResult)
@@ -168,12 +171,12 @@ namespace ServiceStack.RateLimit.Redis
                 return scriptFromConfig;
             }
 
-            if (string.IsNullOrEmpty(_scriptSha1))
+            if (string.IsNullOrEmpty(scriptSha1))
             {
                 log.Info("Registering Lua rate limiting script");
-                _scriptSha1 = LuaScriptHelpers.RegisterLuaScript(redisClientsManager);
+                scriptSha1 = LuaScriptHelpers.RegisterLuaScript(redisClientsManager);
             }
-            return _scriptSha1;
+            return scriptSha1;
         }
 
         private void EnsureDependencies(IAppHost appHost)

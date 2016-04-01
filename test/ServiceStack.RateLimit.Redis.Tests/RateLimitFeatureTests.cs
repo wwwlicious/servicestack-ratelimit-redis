@@ -196,6 +196,24 @@ namespace ServiceStack.RateLimit.Redis.Tests
             A.CallTo(() => client.ExecLuaSha(sha1, A<string[]>.Ignored, A<string[]>.Ignored)).MustHaveHappened();
         }
 
+        [Theory, InlineAutoData]
+        public void ProcessRequest_ExecutesLuaScript(string sha1, RateLimitResult rateLimitResult)
+        {
+            var client = A.Fake<IRedisClient>();
+            A.CallTo(() => redisManager.GetClient()).Returns(client);
+            A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
+
+            A.CallTo(() => client.ExecLuaSha(A<string>.Ignored, A<string[]>.Ignored, A<string[]>.Ignored))
+                .Returns(new RedisText { Text = rateLimitResult.ToJson() });
+
+            var feature = GetSut();
+            var mockHttpResponse = new MockHttpResponse();
+            feature.ProcessRequest(new MockHttpRequest(), mockHttpResponse, null);
+
+            mockHttpResponse.Headers[Redis.Headers.HttpHeaders.RateLimitUser].Should().NotBeNullOrWhiteSpace();
+            mockHttpResponse.Headers[Redis.Headers.HttpHeaders.RateLimitRequest].Should().NotBeNullOrWhiteSpace();
+        }
+
         [Fact]
         public void ProcessRequest_Returns429_IfLimitBreached()
         {

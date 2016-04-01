@@ -100,9 +100,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Headers\RateLimitHeaderTests.cs" />
     <Compile Include="LimitKeyGeneratorTests.cs" />
     <Compile Include="LimitProviderBaseTests.cs" />
     <Compile Include="Models\RateLimitResultTests.cs" />
+    <Compile Include="Models\RateLimitTimeResultTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RateLimitFeatureTests.cs" />
     <Compile Include="Utilities\LuaScriptHelpersTests.cs" />

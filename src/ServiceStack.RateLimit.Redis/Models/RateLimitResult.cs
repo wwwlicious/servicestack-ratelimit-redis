@@ -25,5 +25,14 @@ namespace ServiceStack.RateLimit.Redis.Models
         public int Seconds { get; set; }
         public int Current { get; set; }
         public bool User { get; set; }
+
+        public int Remaining
+        {
+            get
+            {
+                var rem = Limit - Current;
+                return rem < 0 ? 0 : rem;
+            }
+        }
     }
 }
