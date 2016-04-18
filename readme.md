@@ -1,6 +1,7 @@
 A rate limiting plugin for [ServiceStack](https://servicestack.net/) that uses [Redis](http://redis.io/) for calculating and persisting request counts. 
 
 # Requirements
+
 An accessible running Redis instance. 
 
 The plugin needs to be passed an IRedisClientsManager instance to work.
@@ -41,9 +42,11 @@ The lookup keys for more granular control are specified below.
 
 ## Demo
 
-The included DemoService is setup with Resource and User limits. 
+The included DemoService is a self hosted AppHost listening on port 8090 with Resource and User limits.
 
 Basic authentication is used for identifying users. There are 3 users: Cheetara, Panthro and Tygra. All users have a password of: "password" (without the quotes!).
+
+The "Postman Samples" folder contains a sample [Postman](https://www.getpostman.com/) collection containing a few calls including authorisation setup.
 
 
 # Overview
