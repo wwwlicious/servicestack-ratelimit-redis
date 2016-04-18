@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ServiceStack.RateLimit.Redis")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Plugin for ServiceStack that adds rate limiting to ensure endpoints are protected from misuse")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MacLean Electrical")]
 [assembly: AssemblyProduct("ServiceStack.RateLimit.Redis")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
