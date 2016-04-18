@@ -49,6 +49,8 @@ Basic authentication is used for identifying users. There are 3 users: Cheetara,
 # Overview
 The plugin registers a [global request filter](https://github.com/ServiceStack/ServiceStack/wiki/Request-and-response-filters#global-request-filters). Every time a request is received a check is made using a [Redis LUA script](http://redis.io/commands/eval). If the specified limits have not been hit then the request is processed as expected. However, if the limit has been reached then a [429](https://tools.ietf.org/html/rfc6585#page-3) "Too Many Requests" response is generated and processing of the request is halted.
 
+Two possible headers are returned from any endpoint that is protecte: x-ratelimit-request and x-ratelimit-user. They will show the seconds duration, the limit and how many remaining calls are available per request, or user respectively.
+
 ## Rate Limits
 At a high level, rate limits can be set at either User or Resource level (by default a resource in this instance is the DTO type name). Limits are fetched from [IAppSettings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings) and can be set at the following levels, in order of precedence:
 
