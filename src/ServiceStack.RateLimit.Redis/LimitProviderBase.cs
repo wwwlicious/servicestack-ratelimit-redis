@@ -13,15 +13,14 @@ namespace ServiceStack.RateLimit.Redis
 
     public class LimitProviderBase : ILimitProvider
     {
-        private readonly ILimitKeyGenerator keyGenerator;
         private const string ScriptKey = "script:ratelimit";
-
         private const int DefaultPerMinute = 10;
         private const int DefaultPerHour = 30;
-        private const int DefaultPerDay = 100;
+
+        private readonly ILimitKeyGenerator keyGenerator;
         private readonly LimitGroup defaultLimits;
         private readonly IAppSettings appSettings;
-        private readonly ILog log;
+        private readonly ILog log = LogManager.GetLogger(typeof(LimitProviderBase));
 
         public LimitProviderBase(ILimitKeyGenerator keyGenerator, IAppSettings appSettings)
         {
@@ -31,16 +30,13 @@ namespace ServiceStack.RateLimit.Redis
             this.keyGenerator = keyGenerator;
             this.appSettings = appSettings;
 
-            log = LogManager.GetLogger(typeof(LimitProviderBase));
-
             // This is purely to ensure that we always have a default limit
             defaultLimits = new LimitGroup
             {
                 Limits = new List<LimitPerSecond>
                 {
                     new LimitPerSecond { Seconds = 60, Limit = DefaultPerMinute },
-                    new LimitPerSecond { Seconds = 3600, Limit = DefaultPerHour },
-                    new LimitPerSecond { Seconds = 86400, Limit = DefaultPerDay }
+                    new LimitPerSecond { Seconds = 3600, Limit = DefaultPerHour }
                 }
             };
         }
@@ -65,7 +61,7 @@ namespace ServiceStack.RateLimit.Redis
 
         protected virtual LimitGroup GetConfigLimit(params string[] keys)
         {
-            // Return the first value that is found as keys is in order of precedence
+            // Return the first value that is found as keys are in order of precedence
             foreach (var key in keys)
             {
                 var limit = appSettings.Get<LimitGroup>(key);

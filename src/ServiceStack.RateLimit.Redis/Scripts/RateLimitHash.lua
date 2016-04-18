@@ -21,9 +21,6 @@ local total		= 0
 
 local function isNewRequest()
 	local requestId = payload.RequestId
-	if (requestId == nil) then
-		return false
-	end
 
 	-- The key is kept per 5 minute block
 	local requestTtl = 300;

@@ -37,13 +37,20 @@ namespace ServiceStack.RateLimit.Redis
         /// </summary>
         public int LimitStatusCode { get; set; } = 429;
 
+        /// <summary>
+        /// Provides a list of limits per request
+        /// </summary>
         public ILimitProvider LimitProvider { get; set; }
+
+        /// <summary>
+        /// Provides a variety of unique keys for requests.
+        /// </summary>
         public ILimitKeyGenerator KeyGenerator { get; set; }
 
         private string scriptSha1;
 
         private readonly IRedisClientsManager redisClientsManager;
-        
+
         private readonly ILog log = LogManager.GetLogger(typeof (RateLimitFeature));
 
         public RateLimitFeature(IRedisClientsManager redisClientsManager)
@@ -120,7 +127,7 @@ namespace ServiceStack.RateLimit.Redis
                 RedisText result = null;
                 try
                 {
-                    // Call lua script to get current hit-rate and over access/no-access
+                    // Call lua script to get current hit-rate and overall access/no-access
                     result = client.ExecLuaSha(GetSha1(), new[] { consumerId, requestId }, new[] { args });
 
                     var rateLimitResult = result.Text.FromJson<RateLimitResult>();
