@@ -105,7 +105,13 @@ Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>())
 
 Since user limits are available a user **must** be authenticated or the request will return a 401: Forbidden response. This is a default behaviour and can be changed by overriding the `LimitKeyGenerator.GetConsumerId(request)` method.
 
+The script needs to be updated to take a list of all Redis Keys that will be operated on. This is documented in the [Redis EVAL documentation](http://redis.io/commands/EVAL) and is particularly relevant if running a Redis Cluster.
+
 ### Extras
 
 * [ServiceStack.Configuration.Consul](https://github.com/MacLeanElectrical/servicestack-configuration-consul) -
 This plugin works well with a shared configuration model where rate limits can be centrally managed globally or across multiple instances of your servicestack instances. The rate limiting scripts can also be updated centrally to make adjustments at runtime.
+
+## Attributions
+
+* http://www.corytaylor.ca/api-throttling-with-servicestack/ by Cory Taylor
