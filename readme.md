@@ -12,6 +12,11 @@ The plugin needs to be passed an IRedisClientsManager instance to work.
 
 ## Quick Start
 
+Install the package [https://www.nuget.org/packages/ServiceStack.RateLimit.Redis](https://www.nuget.org/packages/ServiceStack.RateLimit.Redis/)
+```bash
+PM> Install-Package ServiceStack.RateLimit.Redis
+```
+
 Add the following to your `AppHost.Configure` method to register the plugin:
 
 ```csharp
@@ -51,7 +56,8 @@ The plugin registers a [global request filter](https://github.com/ServiceStack/S
 Two possible headers are returned from any endpoint that is protecte: x-ratelimit-request and x-ratelimit-user. They will show the seconds duration, the limit and how many remaining calls are available per request, or user respectively.
 
 ### Rate Limits
-At a high level, rate limits can be set at either User or Resource level (by default a resource in this instance is the DTO type name). Limits are fetched from [IAppSettings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings) and can be set at the following levels, in order of precedence:
+
+At a high level, rate limits can be set at either **User** or **Resource** level (by default a resource in this instance is the DTO type name). Limits are fetched from [IAppSettings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings) and can be set at the following levels, in order of precedence:
 
 * User for resource - User 123 can make X requests to a specific resource (e.g. /api/products). (config key: "lmt:{resourceName}:{userId}")
 * User - User 123 can make X total requests for specific time period(s). (config key: "lmt:usr:{userId}")
@@ -98,3 +104,8 @@ Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>())
 ### Caveats
 
 Since user limits are available a user **must** be authenticated or the request will return a 401: Forbidden response. This is a default behaviour and can be changed by overriding the `LimitKeyGenerator.GetConsumerId(request)` method.
+
+### Extras
+
+* [ServiceStack.Configuration.Consul](https://github.com/MacLeanElectrical/servicestack-configuration-consul) -
+This plugin works well with a shared configuration model where rate limits can be centrally managed globally or across multiple instances of your servicestack instances. The rate limiting scripts can also be updated centrally to make adjustments at runtime.
