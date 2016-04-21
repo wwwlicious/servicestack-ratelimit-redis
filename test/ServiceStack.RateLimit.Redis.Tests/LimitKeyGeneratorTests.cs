@@ -24,11 +24,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             }
         }
 
-        private static LimitKeyGenerator GetGenerator()
-        {
-            var keyGenerator = new LimitKeyGenerator();
-            return keyGenerator;
-        }
+        private static LimitKeyGenerator GetGenerator() => new LimitKeyGenerator();
 
         [Theory, AutoData]
         public void GetRequestId_ReturnsOperationName(string operationName)

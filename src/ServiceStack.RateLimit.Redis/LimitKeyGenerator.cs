@@ -47,13 +47,18 @@ namespace ServiceStack.RateLimit.Redis
             IAuthSession userSession = request.GetSession();
 
             // TODO This will need more love to authorize user rather than just verify authentication (not necessarily here but in general)
-            if (!(userSession?.IsAuthenticated ?? false))
+            if (!IsUserAuthenticated(userSession))
             {
                 log.Error($"User {userSession?.UserName ?? "<unknown>"} not authenticated for request {request.AbsoluteUri}");
                 throw new AuthenticationException("You must be authenticated to access this service");
             }
 
             return userSession.UserAuthId?.ToLowerInvariant();
+        }
+
+        private static bool IsUserAuthenticated(IAuthSession userSession)
+        {
+            return userSession?.IsAuthenticated ?? false;
         }
     }
 }

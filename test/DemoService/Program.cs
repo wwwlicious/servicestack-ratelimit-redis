@@ -23,10 +23,7 @@ namespace DemoService
 
     public class DemoService : Service
     {
-        public object Any(DemoRequest demoRequest)
-        {
-            return new DemoResponse { Message = "Response from Demo Service" };
-        }
+        public object Any(DemoRequest demoRequest) => new DemoResponse { Message = "Response from Demo Service" };
     }
 
     [Authenticate]
