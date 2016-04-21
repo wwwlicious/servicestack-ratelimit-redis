@@ -72,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RateLimitFeature.cs" />
     <Compile Include="Utilities\LuaScriptHelpers.cs" />
+    <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\RequestExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
