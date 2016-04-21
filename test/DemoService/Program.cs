@@ -26,7 +26,7 @@ namespace DemoService
         public object Any(DemoRequest demoRequest) => new DemoResponse { Message = "Response from Demo Service" };
     }
 
-    //[Authenticate]
+    [Authenticate]
     public class DemoRequest : IReturn<DemoResponse>
     {
     }

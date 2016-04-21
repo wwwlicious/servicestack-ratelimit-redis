@@ -8,7 +8,7 @@ A rate limiting plugin for [ServiceStack](https://servicestack.net/) that uses [
 
 An accessible running Redis instance. 
 
-The plugin needs to be passed an IRedisClientsManager instance to work.
+The plugin needs to be passed an `IRedisClientsManager` instance to work.
 
 ## Quick Start
 
@@ -32,11 +32,11 @@ public override void Configure(Container container)
 
 There is a baked-in default limit for each DTO type of: 10 requests per minute, 30 request per hour.
 
-To override this add an AppSetting with key *lmt:default* to the App.Config/Web.Config of project running AppHost will provide limit values.
+To override this add an AppSetting with key *ss/lmt/default* to the App.Config/Web.Config of project running AppHost will provide limit values.
 
 ```
 <!-- default of 10 per second, 50 per minute, 200 per hour-->
-<add key="lmt:default" value="{Limits:[{Limit:10,Seconds:1},{Limit:50,Seconds:60},{Limit:200,Seconds:3600}]}"/>
+<add key="ss/lmt/default" value="{Limits:[{Limit:10,Seconds:1},{Limit:50,Seconds:60},{Limit:200,Seconds:3600}]}"/>
 ```
 
 The lookup keys for more granular control are specified below.
@@ -53,46 +53,61 @@ The "Postman Samples" folder contains a sample [Postman](https://www.getpostman.
 ## Overview
 The plugin registers a [global request filter](https://github.com/ServiceStack/ServiceStack/wiki/Request-and-response-filters#global-request-filters). Every time a request is received a check is made using a [Redis LUA script](http://redis.io/commands/eval). If the specified limits have not been hit then the request is processed as expected. However, if the limit has been reached then a [429](https://tools.ietf.org/html/rfc6585#page-3) "Too Many Requests" response is generated and processing of the request is halted.
 
-Two possible headers are returned from any endpoint that is protecte: x-ratelimit-request and x-ratelimit-user. They will show the seconds duration, the limit and how many remaining calls are available per request, or user respectively.
+Two possible headers are returned from any endpoint that is protected: `x-ratelimit-request` and `x-ratelimit-user`. They will show the seconds duration, the limit and how many remaining calls are available per request, or user respectively.
 
 ### Rate Limits
 
 At a high level, rate limits can be set at either **User** or **Resource** level (by default a resource in this instance is the DTO type name). Limits are fetched from [IAppSettings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings) and can be set at the following levels, in order of precedence:
 
-* User for resource - User 123 can make X requests to a specific resource (e.g. /api/products). (config key: "lmt:{resourceName}:{userId}")
-* User - User 123 can make X total requests for specific time period(s). (config key: "lmt:usr:{userId}")
-* User fallback - Fallback total request limit for users without specific defaults. (config key: "lmt:usr:default")
-* Resource - Each user can make X requests to a resource (e.g. /api/products) for specific time period(s). (config key: "lmt:{resourceName}".)
-* Resource fallback - Fallback limit for requests individual users can make to a resource. (config key: "lmt:default")
+| Order | Type | Description | Default Key |
+| --- | --- | --- | --- |
+| 1 | User for resource | User 123 can make X requests to a specific resource (e.g. /api/products) | `ss/lmt/{resourceName}/{userId}` |
+| 2 | User | User 123 can make X total requests for specific time period(s) | `ss/lmt/usr/{userId}` |
+| 3 | User fallback | Fallback total request limit for users without specific defaults | `ss/lmt/usr/default` |
+| 4 | Resource | Each user can make X requests to a resource (e.g. /api/products) for specific time period(s) | `ss/lmt/{resourceName}` |
+| 5 | Resource fallback | Fallback limit for requests individual users can make to a resource. | `ss/lmt/default` |
 
 User limits AND resource limits will be calculated at the same time (if present). User limits are calculated first. If a limit is hit subsequent wider limits are not incremented (e.g. if limit per second is hit, limit per minute would not be counted).
 
+#### Customising Keys
+
+It is possible to change both the prefix, default *ss* (to distinguish ServiceStack settings), and delimiter, default */*, as static variables of the `LimitKeyGenerator` class. For example:
+
+```csharp
+LimitKeyGenerator.Delimiter = "-";
+LimitKeyGenerator.Prefix = null;
+```
+
+Would produce keys like `lmt-default` rather than `ss/lmt/default`.
+
 #### Limit Representation
 All limits are per second and are stored as a LimitGroup object serialised to JSV. For example, the following shows a limit of 5 requests per second, 15 per minute (60s) and 100 per hour (3600s):
-```xml
+```json
 {Limits:[{Limit:5,Seconds:1},{Limit:15,Seconds:60},{Limit:100,Seconds:3600}]}
 ```
 
 #### LUA Script
 A LUA script is used for doing the heavy lifting and keeping track of limit totals. To save bandwith on calls to Redis the [EVALSHA](http://redis.io/commands/evalsha) command is used to call a LUA script which has previously been [loaded](http://redis.io/commands/script-load).
 
-The default implementation of ILimitProvider (see below) will check IAppSettings for a value with key "script:ratelimit". This value will be the SHA1 of the script to use. Using this method means that the script can be managed external to the plugin.
+The default implementation of ILimitProvider (see below) will check IAppSettings for a value with key *ss/script/ratelimit*. This value will be the SHA1 of the script to use. Using this method means that the script can be managed external to the plugin.
 
 If an AppSetting is not found with the specified key then the RateLimitHash.lua script is loaded, the SHA1 is stored and used for subsequent requests.
 
 **Note:** The RateLimitHash.lua script does not currently use a sliding expiry, instead is resets every X seconds. E.g. if the limit is for 50 requests in 3600 seconds (1 hour) then 50 requests could be made at 10:59 and then 50 request can be made at 11:01. This is something that may be looked at in the future.
 
 ### Extensibility
-There are a few extension point that can be set when adding the plugin:
+There are a few extension point that can be set when adding the plugin. These are all properties of the RateLimitFeature class and can be set when instantiating the plugin:
 
-* CorrelationIdExtractor - This is a delegate function that customises how an individual request is identified. By default it uses the value of HTTP Header with name specified by CorrelationIdHeader property. **Note:** This is primarily required for when a ServiceStack service calls subsequent ServiceStack services that all use this plugin as it will avoid user totals being incremented multiple times for the same request.
-* CorrelationIdHeader - The name of the header used for extracting correlation Id from request (if using default method). Default: x-mac-requestid.
-* StatusDescription - the status description returned when limit is breached. Default "Too many requests".
-* LimitStatusCode - the status code returned when limit is breached. Default 429.
-* KeyGenerator - an implementation of IKeyGenerator for generating config lookup key(s) for request. Defaults outlined above.
-* LimitProvider - an implementation of ILimitProvider for getting RateLimits for current request. Default uses IKeyGenerator keys to lookup IAppSettings.
-
-These are all properties of the RateLimitFeature class and can be set when instantiating the plugin
+| Property | Description | Notes |
+| --- | --- | --- |
+| CorrelationIdExtractor | This is a delegate function that customises how an individual request is identified. | By default it uses the value of HTTP Header with name specified by CorrelationIdHeader property. This is primarily required for when a ServiceStack service calls subsequent ServiceStack services that all use this plugin as it will avoid user totals being incremented multiple times for the same request. |
+| CorrelationIdHeader | The name of the header used for extracting correlation Id from request (if using default method) | Default: `x-mac-requestid` |
+| StatusDescription | The status description returned when limit is breached | Default: "Too many requests" |
+| LimitStatusCode | the status code returned when limit is breached. | Default: 429 |
+| KeyGenerator | an implementation of IKeyGenerator for generating config lookup key(s) for request. | Defaults outlined above |
+| LimitProvider | an implementation of ILimitProvider for getting RateLimits for current request. | Default uses `IKeyGenerator` keys to lookup `IAppSettings` |
+ 
+Example:
 ```csharp
 Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>())
 {
