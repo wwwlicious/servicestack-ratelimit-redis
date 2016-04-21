@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 namespace ServiceStack.RateLimit.Redis.Tests
 {
+    using System;
     using System.Linq;
     using Auth;
     using FakeItEasy;
@@ -20,7 +21,10 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             if (ServiceStackHost.Instance == null)
             {
-                new BasicAppHost().Init();
+                var appHost = new BasicAppHost { TestMode = true }.Init();
+
+                // The GetConsumerId method requires an AuthUserSession.
+                AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(appHost.AppSettings));
             }
         }
 
@@ -42,10 +46,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void GetConsumerId_ThrowsAuthenticationException_IfNotAuthenticated()
         {
-            var request = new MockHttpRequest();
             var keyGenerator = GetGenerator();
 
-            Assert.Throws<AuthenticationException>(() => keyGenerator.GetConsumerId(request));
+            Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
+
+            action.ShouldThrow<AuthenticationException>();
         }
 
         [Theory, AutoData]
@@ -172,6 +177,19 @@ namespace ServiceStack.RateLimit.Redis.Tests
             // From http://stackoverflow.com/questions/34064277/passing-session-in-unit-test
             request.Items[SessionFeature.RequestItemsSessionKey] = authSession;
             return authSession;
+        }
+    }
+
+    public class LimitKeyGeneratorHostlessTests
+    {
+        [Fact]
+        public void GetConsumerId_ThrowsInvalidOperationException_IfNoAuthProviders()
+        {
+            var keyGenerator = new LimitKeyGenerator();
+
+            Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
+
+            action.ShouldThrow<InvalidOperationException>();
         }
     }
 }

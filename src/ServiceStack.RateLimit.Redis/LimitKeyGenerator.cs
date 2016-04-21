@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 namespace ServiceStack.RateLimit.Redis
 {
+    using System;
     using System.Collections.Generic;
     using Auth;
     using Interfaces;
@@ -48,6 +49,12 @@ namespace ServiceStack.RateLimit.Redis
 
         public virtual string GetConsumerId(IRequest request)
         {
+            if (AuthenticateService.AuthProviders == null)
+            {
+                throw new InvalidOperationException(
+                    "AuthService not initialized. This is required for generating default ConsumerId for RateLimitting.");
+            }
+
             IAuthSession userSession = request.GetSession();
 
             // TODO This will need more love to authorize user rather than just verify authentication (not necessarily here but in general)

@@ -50,7 +50,8 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfRedisManagerNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new RateLimitFeature(null));
+            Action action = () => new RateLimitFeature(null);
+            action.ShouldThrow<ArgumentNullException>();
         }
 
         [Fact]

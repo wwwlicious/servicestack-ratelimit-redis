@@ -37,14 +37,14 @@ namespace DemoService
 
         private void SetupPlugins()
         {
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+            /*Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
                 new IAuthProvider[]
                 {
                     new BasicAuthProvider()
-                }));
+                }));*/
 
-            LimitKeyGenerator.Delimiter = ":";
-            LimitKeyGenerator.Prefix = null;
+            /*LimitKeyGenerator.Delimiter = ":";
+            LimitKeyGenerator.Prefix = null;*/
             Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>()));
         }
 
