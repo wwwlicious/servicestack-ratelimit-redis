@@ -43,6 +43,8 @@ namespace DemoService
                     new BasicAuthProvider()
                 }));
 
+            LimitKeyGenerator.Delimiter = ":";
+            LimitKeyGenerator.Prefix = null;
             Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>()));
         }
 
@@ -51,8 +53,6 @@ namespace DemoService
             // Ubuntu VM running redis
             var redisConnection = AppSettings.GetString("RedisConnectionString");
             Container.Register<IRedisClientsManager>(new BasicRedisClientManager(redisConnection));
-
-            Container.Register(AppSettings);
 
             // Setup basic auth
             Container.Register<ICacheClient>(new MemoryCacheClient());

@@ -73,9 +73,9 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory]
-        [InlineData("lmt:opname:userId", 0)]
-        [InlineData("lmt:opname", 1)]
-        [InlineData("lmt:default", 2)]
+        [InlineData("ss/lmt/opname/userId", 0)]
+        [InlineData("ss/lmt/opname", 1)]
+        [InlineData("ss/lmt/default", 2)]
         public void GetConfigKeysForRequest_ReturnsResultsInOrder(string key, int index)
         {
             const string operationName = "opname";
@@ -90,8 +90,32 @@ namespace ServiceStack.RateLimit.Redis.Tests
             keys.ToList()[index].Should().Be(key.ToLower());
         }
 
+        [Theory]
+        [InlineData("lmt:opname:userId", 0)]
+        [InlineData("lmt:opname", 1)]
+        [InlineData("lmt:default", 2)]
+        public void GetConfigKeysForRequest_ReturnsResultsInOrder_ObeyDelimiterAndPrefix(string key, int index)
+        {
+            const string operationName = "opname";
+            const string userAuthId = "userId";
+            LimitKeyGenerator.Delimiter = ":";
+            LimitKeyGenerator.Prefix = null;
+
+            var request = new MockHttpRequest(operationName, "GET", "text/json", string.Empty, null, null, null);
+            SetupAuthenticatedSession(userAuthId, request);
+
+            var keyGenerator = GetGenerator();
+            var keys = keyGenerator.GetConfigKeysForRequest(request);
+
+            keys.ToList()[index].Should().Be(key.ToLower());
+
+            // Now set the values back as they're static (avoid breaking tests)
+            LimitKeyGenerator.Delimiter = "/";
+            LimitKeyGenerator.Prefix = "ss";
+        }
+
         [Fact]
-        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys_def()
+        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys()
         {
             MockHttpRequest request = new MockHttpRequest();
             SetupAuthenticatedSession("123", request);
@@ -103,9 +127,31 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory]
-        [InlineData("lmt:usr:userid", 0)]
-        [InlineData("lmt:usr:default", 1)]
-        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys(string key, int index)
+        [InlineData("test|lmt|usr|userid", 0)]
+        [InlineData("test|lmt|usr|default", 1)]
+        public void GetConfigKeysForUser_ReturnsResultsInOrder_ObeyDelimiterAndPrefix(string key, int index)
+        {
+            const string userAuthId = "userId";
+            MockHttpRequest request = new MockHttpRequest();
+            SetupAuthenticatedSession(userAuthId, request);
+
+            LimitKeyGenerator.Delimiter = "|";
+            LimitKeyGenerator.Prefix = "test";
+
+            var keyGenerator = GetGenerator();
+            var keys = keyGenerator.GetConfigKeysForUser(request);
+
+            keys.ToList()[index].Should().Be(key);
+
+            // Now set the values back as they're static (avoid breaking tests)
+            LimitKeyGenerator.Delimiter = "/";
+            LimitKeyGenerator.Prefix = "ss";
+        }
+
+        [Theory]
+        [InlineData("ss/lmt/usr/userid", 0)]
+        [InlineData("ss/lmt/usr/default", 1)]
+        public void GetConfigKeysForUser_ReturnsResultsInOrder(string key, int index)
         {
             const string userAuthId = "userId";
             MockHttpRequest request = new MockHttpRequest();
