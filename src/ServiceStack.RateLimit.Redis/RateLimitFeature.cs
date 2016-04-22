@@ -88,9 +88,9 @@ namespace ServiceStack.RateLimit.Redis
 
             using (var config = JsConfig.BeginScope())
             {
+                config.ExcludeTypeInfo = true;
                 foreach (var header in headerResults)
                 {
-                    config.ExcludeTypeInfo = true;
                     response.AddHeader(header.HeaderName, header.Limits.ToJson());
                 }
             }
