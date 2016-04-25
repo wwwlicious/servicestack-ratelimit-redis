@@ -9,6 +9,7 @@ namespace ServiceStack.RateLimit.Redis
     using Interfaces;
     using Logging;
     using Models;
+    using Utilities;
     using Web;
 
     public class LimitProviderBase : ILimitProvider
@@ -49,8 +50,8 @@ namespace ServiceStack.RateLimit.Redis
             return new Limits
             {
                 // Return default if none found
-                Request = requestLimits ?? defaultLimits,
-                User = userLimits
+                Request = requestLimits.HasValue ? requestLimits.Value : defaultLimits,
+                User = userLimits.HasValue ? userLimits.Value : null
             };
         }
 
@@ -59,7 +60,7 @@ namespace ServiceStack.RateLimit.Redis
             return appSettings.GetString(ScriptKey);
         }
 
-        protected virtual LimitGroup GetConfigLimit(params string[] keys)
+        protected virtual Maybe<LimitGroup> GetConfigLimit(params string[] keys)
         {
             // Return the first value that is found as keys are in order of precedence
             foreach (var key in keys)
@@ -67,7 +68,7 @@ namespace ServiceStack.RateLimit.Redis
                 var limit = appSettings.Get<LimitGroup>(key);
                 if (limit != null)
                 {
-                    return limit;
+                    return new Maybe<LimitGroup>(limit);
                 }
             }
 
@@ -76,17 +77,17 @@ namespace ServiceStack.RateLimit.Redis
                 log.Debug($"No matching config values found for {keys.ToCsv()}");
             }
 
-            return null;
+            return new Maybe<LimitGroup>();
         }
 
-        private LimitGroup GetRequestLimits(IRequest request)
+        private Maybe<LimitGroup> GetRequestLimits(IRequest request)
         {
             var requestKeys = keyGenerator.GetConfigKeysForRequest(request);
             var requestLimits = GetConfigLimit(requestKeys.ToArray());
             return requestLimits;
         }
 
-        private LimitGroup GetUserLimits(IRequest request)
+        private Maybe<LimitGroup> GetUserLimits(IRequest request)
         {
             var userKey = keyGenerator.GetConfigKeysForUser(request);
             var userLimit = GetConfigLimit(userKey.ToArray());

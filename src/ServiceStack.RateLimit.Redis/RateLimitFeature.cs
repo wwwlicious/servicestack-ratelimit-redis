@@ -86,14 +86,14 @@ namespace ServiceStack.RateLimit.Redis
         {
             var headerResults = RateLimitHeader.Create(result?.Results);
 
-            var excludeTypeInfo = JsConfig.ExcludeTypeInfo;
-            foreach (var header in headerResults)
+            using (var config = JsConfig.BeginScope())
             {
-                JsConfig.ExcludeTypeInfo = true;
-                response.AddHeader(header.HeaderName, header.Limits.ToJson());
+                config.ExcludeTypeInfo = true;
+                foreach (var header in headerResults)
+                {
+                    response.AddHeader(header.HeaderName, header.Limits.ToJson());
+                }
             }
-
-            JsConfig.ExcludeTypeInfo = excludeTypeInfo;
         }
 
         private void ProcessResult(IResponse response, RateLimitResult rateLimitResult)

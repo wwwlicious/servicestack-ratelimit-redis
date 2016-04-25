@@ -12,8 +12,7 @@
     <tags>servicestack plugin rate limit ratelimit microservices redis protect</tags>
     <releaseNotes>See github project for details</releaseNotes>
     <dependencies>
-	  <dependency id="ServiceStack" version="[4.0.54, 5)" />
-      <dependency id="ServiceStack.Redis" version="[4.0.54, 5)" />
+  	  <dependency id="ServiceStack.Server" version="[4.0.56, 5)" />
     </dependencies>
   </metadata>
 </package>

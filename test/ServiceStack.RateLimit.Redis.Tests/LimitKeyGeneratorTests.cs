@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 namespace ServiceStack.RateLimit.Redis.Tests
 {
+    using System;
     using System.Linq;
     using Auth;
     using FakeItEasy;
@@ -20,15 +21,14 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             if (ServiceStackHost.Instance == null)
             {
-                new BasicAppHost().Init();
+                var appHost = new BasicAppHost { TestMode = true }.Init();
+
+                // The GetConsumerId method requires an AuthUserSession.
+                AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(appHost.AppSettings));
             }
         }
 
-        private static LimitKeyGenerator GetGenerator()
-        {
-            var keyGenerator = new LimitKeyGenerator();
-            return keyGenerator;
-        }
+        private static LimitKeyGenerator GetGenerator() => new LimitKeyGenerator();
 
         [Theory, AutoData]
         public void GetRequestId_ReturnsOperationName(string operationName)
@@ -46,10 +46,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void GetConsumerId_ThrowsAuthenticationException_IfNotAuthenticated()
         {
-            var request = new MockHttpRequest();
             var keyGenerator = GetGenerator();
 
-            Assert.Throws<AuthenticationException>(() => keyGenerator.GetConsumerId(request));
+            Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
+
+            action.ShouldThrow<AuthenticationException>();
         }
 
         [Theory, AutoData]
@@ -77,9 +78,9 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory]
-        [InlineData("lmt:opname:userId", 0)]
-        [InlineData("lmt:opname", 1)]
-        [InlineData("lmt:default", 2)]
+        [InlineData("ss/lmt/opname/userId", 0)]
+        [InlineData("ss/lmt/opname", 1)]
+        [InlineData("ss/lmt/default", 2)]
         public void GetConfigKeysForRequest_ReturnsResultsInOrder(string key, int index)
         {
             const string operationName = "opname";
@@ -94,8 +95,32 @@ namespace ServiceStack.RateLimit.Redis.Tests
             keys.ToList()[index].Should().Be(key.ToLower());
         }
 
+        [Theory]
+        [InlineData("lmt:opname:userId", 0)]
+        [InlineData("lmt:opname", 1)]
+        [InlineData("lmt:default", 2)]
+        public void GetConfigKeysForRequest_ReturnsResultsInOrder_ObeyDelimiterAndPrefix(string key, int index)
+        {
+            const string operationName = "opname";
+            const string userAuthId = "userId";
+            LimitKeyGenerator.Delimiter = ":";
+            LimitKeyGenerator.Prefix = null;
+
+            var request = new MockHttpRequest(operationName, "GET", "text/json", string.Empty, null, null, null);
+            SetupAuthenticatedSession(userAuthId, request);
+
+            var keyGenerator = GetGenerator();
+            var keys = keyGenerator.GetConfigKeysForRequest(request);
+
+            keys.ToList()[index].Should().Be(key.ToLower());
+
+            // Now set the values back as they're static (avoid breaking tests)
+            LimitKeyGenerator.Delimiter = "/";
+            LimitKeyGenerator.Prefix = "ss";
+        }
+
         [Fact]
-        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys_def()
+        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys()
         {
             MockHttpRequest request = new MockHttpRequest();
             SetupAuthenticatedSession("123", request);
@@ -107,9 +132,31 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory]
-        [InlineData("lmt:usr:userid", 0)]
-        [InlineData("lmt:usr:default", 1)]
-        public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys(string key, int index)
+        [InlineData("test|lmt|usr|userid", 0)]
+        [InlineData("test|lmt|usr|default", 1)]
+        public void GetConfigKeysForUser_ReturnsResultsInOrder_ObeyDelimiterAndPrefix(string key, int index)
+        {
+            const string userAuthId = "userId";
+            MockHttpRequest request = new MockHttpRequest();
+            SetupAuthenticatedSession(userAuthId, request);
+
+            LimitKeyGenerator.Delimiter = "|";
+            LimitKeyGenerator.Prefix = "test";
+
+            var keyGenerator = GetGenerator();
+            var keys = keyGenerator.GetConfigKeysForUser(request);
+
+            keys.ToList()[index].Should().Be(key);
+
+            // Now set the values back as they're static (avoid breaking tests)
+            LimitKeyGenerator.Delimiter = "/";
+            LimitKeyGenerator.Prefix = "ss";
+        }
+
+        [Theory]
+        [InlineData("ss/lmt/usr/userid", 0)]
+        [InlineData("ss/lmt/usr/default", 1)]
+        public void GetConfigKeysForUser_ReturnsResultsInOrder(string key, int index)
         {
             const string userAuthId = "userId";
             MockHttpRequest request = new MockHttpRequest();
@@ -130,6 +177,19 @@ namespace ServiceStack.RateLimit.Redis.Tests
             // From http://stackoverflow.com/questions/34064277/passing-session-in-unit-test
             request.Items[SessionFeature.RequestItemsSessionKey] = authSession;
             return authSession;
+        }
+    }
+
+    public class LimitKeyGeneratorHostlessTests
+    {
+        [Fact]
+        public void GetConsumerId_ThrowsInvalidOperationException_IfNoAuthProviders()
+        {
+            var keyGenerator = new LimitKeyGenerator();
+
+            Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
+
+            action.ShouldThrow<InvalidOperationException>();
         }
     }
 }

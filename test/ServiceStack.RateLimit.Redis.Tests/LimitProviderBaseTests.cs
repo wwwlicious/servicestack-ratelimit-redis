@@ -32,13 +32,15 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfKeyGeneratorNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new LimitProviderBase(null, A.Fake<IAppSettings>()));
+            Action action = () => new LimitProviderBase(null, A.Fake<IAppSettings>());
+            action.ShouldThrow<ArgumentNullException>();
         }
 
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfAppSettingNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new LimitProviderBase(A.Fake<ILimitKeyGenerator>(), null));
+            Action action = () => new LimitProviderBase(A.Fake<ILimitKeyGenerator>(), null);
+            action.ShouldThrow<ArgumentNullException>();
         }
 
         [Theory, AutoData]
