@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 namespace ServiceStack.RateLimit.Redis
 {
+    using System;
     using System.Collections.Generic;
     using Auth;
     using Interfaces;
@@ -12,8 +13,12 @@ namespace ServiceStack.RateLimit.Redis
 
     public class LimitKeyGenerator : ILimitKeyGenerator
     {
-        private const string DefaultConfigKey = "lmt:default";
-        private const string DefaultUserConfigKey = "lmt:usr:default";
+        public static string Delimiter = "/";
+        public static string Prefix = "ss";
+
+        private readonly string defaultConfigKey = GenerateKey("lmt", "default");
+        private readonly string defaultUserConfigKey = GenerateKey("lmt", "usr", "default");
+
         private readonly ILog log = LogManager.GetLogger(typeof(LimitKeyGenerator));
          
         // This is how we will generate the key that is used to lookup the LimitProvider
@@ -23,18 +28,18 @@ namespace ServiceStack.RateLimit.Redis
             string requestId = GetRequestId(request);
 
             // Build up a list of all keys in order of precedence
-            string userRequestKey = $"lmt:{requestId}:{userId}";
-            string requestKey = $"lmt:{requestId}";
+            string userRequestKey = GenerateKey("lmt", requestId, userId);
+            string requestKey = GenerateKey("lmt", requestId);
 
-            return new[] { userRequestKey, requestKey, DefaultConfigKey };
+            return new[] { userRequestKey, requestKey, defaultConfigKey };
         }
 
         public virtual IEnumerable<string> GetConfigKeysForUser(IRequest request)
         {
             string userId = GetConsumerId(request);
 
-            string userKey = $"lmt:usr:{userId}";
-            return new[] { userKey, DefaultUserConfigKey };
+            string userKey = GenerateKey("lmt", "usr", userId);
+            return new[] { userKey, defaultUserConfigKey };
         }
 
         public virtual string GetRequestId(IRequest request)
@@ -44,16 +49,34 @@ namespace ServiceStack.RateLimit.Redis
 
         public virtual string GetConsumerId(IRequest request)
         {
+            if (AuthenticateService.AuthProviders == null)
+            {
+                throw new InvalidOperationException(
+                    "AuthService not initialized. This is required for generating default ConsumerId for RateLimitting.");
+            }
+
             IAuthSession userSession = request.GetSession();
 
             // TODO This will need more love to authorize user rather than just verify authentication (not necessarily here but in general)
-            if (!(userSession?.IsAuthenticated ?? false))
+            if (!IsUserAuthenticated(userSession))
             {
                 log.Error($"User {userSession?.UserName ?? "<unknown>"} not authenticated for request {request.AbsoluteUri}");
                 throw new AuthenticationException("You must be authenticated to access this service");
             }
 
             return userSession.UserAuthId?.ToLowerInvariant();
+        }
+
+        private static bool IsUserAuthenticated(IAuthSession userSession)
+        {
+            return userSession?.IsAuthenticated ?? false;
+        }
+
+        private static string GenerateKey(params string[] keyParts)
+        {
+            var usablePrefix = string.IsNullOrWhiteSpace(Prefix) ? string.Empty : string.Concat(Prefix, Delimiter);
+
+            return $"{usablePrefix}{string.Join(Delimiter, keyParts)}";
         }
     }
 }

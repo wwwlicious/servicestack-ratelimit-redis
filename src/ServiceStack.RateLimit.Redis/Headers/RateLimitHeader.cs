@@ -19,7 +19,7 @@ namespace ServiceStack.RateLimit.Redis.Headers
                 return new RateLimitHeader[0];
             }
 
-            var headers = from result in results
+            return from result in results
                 group result by result.User
                 into grp
                 select
@@ -28,8 +28,6 @@ namespace ServiceStack.RateLimit.Redis.Headers
                         Limits = grp.Select(r => new RateLimitStatus(r.Limit, r.Remaining, r.Seconds)),
                         HeaderName = grp.Key ? HttpHeaders.RateLimitUser : HttpHeaders.RateLimitRequest
                     };
-
-            return headers;
         }
     }
 }
