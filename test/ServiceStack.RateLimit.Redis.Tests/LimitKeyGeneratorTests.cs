@@ -15,13 +15,15 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Xunit;
 
     [Collection("RateLimitTests")]
-    public class LimitKeyGeneratorTests
+    public class LimitKeyGeneratorTests : IDisposable
     {
+        private ServiceStackHost appHost;
+
         public LimitKeyGeneratorTests()
         {
             if (ServiceStackHost.Instance == null)
             {
-                var appHost = new BasicAppHost { TestMode = true }.Init();
+                appHost = new BasicAppHost { TestMode = true }.Init();
 
                 // The GetConsumerId method requires an AuthUserSession.
                 AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(appHost.AppSettings));
@@ -178,6 +180,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
             request.Items[SessionFeature.RequestItemsSessionKey] = authSession;
             return authSession;
         }
+
+        public void Dispose()
+        {
+            appHost.Dispose();
+        }
     }
 
     public class LimitKeyGeneratorHostlessTests
@@ -185,11 +192,14 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void GetConsumerId_ThrowsInvalidOperationException_IfNoAuthProviders()
         {
-            var keyGenerator = new LimitKeyGenerator();
+            using (var service = new AuthenticateService())
+            {
+                var keyGenerator = new LimitKeyGenerator();
 
-            Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
+                Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
 
-            action.ShouldThrow<InvalidOperationException>();
+                action.ShouldThrow<InvalidOperationException>();
+            }
         }
     }
 }
