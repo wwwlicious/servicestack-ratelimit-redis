@@ -14,7 +14,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    [Collection("RateLimitTests")]
+    [Collection("LimitKeyGeneratorTests")]
     public class LimitKeyGeneratorTests : IDisposable
     {
         private ServiceStackHost appHost;
@@ -183,22 +183,39 @@ namespace ServiceStack.RateLimit.Redis.Tests
 
         public void Dispose()
         {
-            appHost.Dispose();
+            appHost?.Dispose();
         }
     }
 
-    public class LimitKeyGeneratorHostlessTests
+    [Collection("LimitKeyGeneratorTests")]
+    public class LimitKeyGeneratorHostlessTests : IDisposable
     {
+        private readonly AppDomain noAuthDomain;
+        public LimitKeyGeneratorHostlessTests()
+        {
+            noAuthDomain = AppDomain.CreateDomain("NoAuthDomain", AppDomain.CurrentDomain.Evidence,
+                AppDomain.CurrentDomain.SetupInformation);
+        }
+
         [Fact]
         public void GetConsumerId_ThrowsInvalidOperationException_IfNoAuthProviders()
         {
-            using (var service = new AuthenticateService())
+            // NOTE Running this in separate apphost as internally checks a public static prop which may have been set in other tests
+            noAuthDomain.DoCallBack(() =>
             {
                 var keyGenerator = new LimitKeyGenerator();
 
                 Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
 
                 action.ShouldThrow<InvalidOperationException>();
+            });
+        }
+
+        public void Dispose()
+        {
+            if (noAuthDomain != null)
+            {
+                AppDomain.Unload(noAuthDomain);
             }
         }
     }
