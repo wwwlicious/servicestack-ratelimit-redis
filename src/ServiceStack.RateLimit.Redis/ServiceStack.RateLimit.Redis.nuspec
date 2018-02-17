@@ -3,7 +3,7 @@
   <metadata>
     <id>ServiceStack.RateLimit.Redis</id>
     <version>$version$</version>
-    <authors>Donald Gray (@donaldgray)</authors>
+    <authors>Donald Gray (@donaldgray);Scott Mackay (@wwwlicious)</authors>
 	<description>Plugin for ServiceStack that adds rate limiting to ensure endpoints are protected from misuse</description>
     <projectUrl>https://github.com/wwwlicious/servicestack-ratelimit-redis</projectUrl>
     <licenseUrl>https://opensource.org/licenses/MPL-2.0</licenseUrl>
