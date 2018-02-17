@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ServiceStack.RateLimit.Redis")]
 [assembly: AssemblyDescription("Plugin for ServiceStack that adds rate limiting to ensure endpoints are protected from misuse")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MacLean Electrical")]
+[assembly: AssemblyCompany("wwwlicious")]
 [assembly: AssemblyProduct("ServiceStack.RateLimit.Redis")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]

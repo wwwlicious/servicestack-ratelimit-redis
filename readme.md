@@ -124,8 +124,8 @@ The script needs to be updated to take a list of all Redis Keys that will be ope
 
 ### Extras
 
-* [ServiceStack.Request.Correlation](https://github.com/MacLeanElectrical/servicestack-request-correlation) - Designed to work seamlessly with this plugin, it will ensure that service to service calls will not increment api usage stats
-* [ServiceStack.Configuration.Consul](https://github.com/MacLeanElectrical/servicestack-configuration-consul) -
+* [ServiceStack.Request.Correlation](https://github.com/wwwlicious/servicestack-request-correlation) - Designed to work seamlessly with this plugin, it will ensure that service to service calls will not increment api usage stats
+* [ServiceStack.Configuration.Consul](https://github.com/wwwlicious/servicestack-configuration-consul) -
 This plugin works well with a shared configuration model where rate limits can be centrally managed globally or across multiple instances of your servicestack instances. The rate limiting scripts can also be updated centrally to make adjustments at runtime.
 
 ## Attributions

@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>Donald Gray (@donaldgray)</authors>
 	<description>Plugin for ServiceStack that adds rate limiting to ensure endpoints are protected from misuse</description>
-    <projectUrl>https://github.com/MacLeanElectrical/servicestack-ratelimit-redis</projectUrl>
+    <projectUrl>https://github.com/wwwlicious/servicestack-ratelimit-redis</projectUrl>
     <licenseUrl>https://opensource.org/licenses/MPL-2.0</licenseUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
