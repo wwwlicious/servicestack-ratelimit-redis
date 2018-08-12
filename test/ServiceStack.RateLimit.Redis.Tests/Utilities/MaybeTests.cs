@@ -8,7 +8,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     using Redis.Utilities;
     using Xunit;
 
-    public class MaybeTests
+    public class MaybeTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void DefaultCtor_HasValueFalse() => new Maybe<string>().HasValue.Should().BeFalse();

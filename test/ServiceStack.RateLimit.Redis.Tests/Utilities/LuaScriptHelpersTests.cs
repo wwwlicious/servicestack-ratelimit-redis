@@ -10,7 +10,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     using ServiceStack.Redis;
     using Xunit;
 
-    public class LuaScriptHelpersTests
+    public class LuaScriptHelpersTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void GetLuaScript_ReturnsScript()

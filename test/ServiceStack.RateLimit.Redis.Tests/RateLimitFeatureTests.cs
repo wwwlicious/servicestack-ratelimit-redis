@@ -17,21 +17,15 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    public class RateLimitFeatureTests : IDisposable
+    public class RateLimitFeatureTests : IClassFixture<AppHostFixture>
     {
         private readonly ILimitKeyGenerator keyGenerator;
         private readonly ILimitProvider limitProvider;
         private readonly IRedisClientsManager redisManager;
         private readonly Limits limit;
-        private ServiceStackHost appHost;
 
         public RateLimitFeatureTests()
         {
-            if (ServiceStackHost.Instance == null)
-            {
-                appHost = new BasicAppHost { TestMode = true }.Init();
-            }
-
             redisManager = A.Fake<IRedisClientsManager>();
             limitProvider = A.Fake<ILimitProvider>();
             keyGenerator = A.Fake<ILimitKeyGenerator>();
@@ -39,11 +33,6 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
             limit = fixture.Create<Limits>();
             A.CallTo(() => limitProvider.GetLimits(A<IRequest>.Ignored)).Returns(limit);
-        }
-        public void Dispose()
-        {
-            appHost?.Dispose();
-            appHost = null;
         }
 
         private RateLimitFeature GetSut(bool setupDefaults = true)

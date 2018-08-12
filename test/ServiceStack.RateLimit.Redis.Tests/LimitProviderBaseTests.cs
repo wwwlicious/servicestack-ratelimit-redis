@@ -15,7 +15,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Testing;
     using Xunit;
 
-    public class LimitProviderBaseTests
+    public class LimitProviderBaseTests : IClassFixture<AppHostFixture>
     {
         private readonly LimitProviderBase limitProvider;
         private readonly ILimitKeyGenerator keyGenerator;

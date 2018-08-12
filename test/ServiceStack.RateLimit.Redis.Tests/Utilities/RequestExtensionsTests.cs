@@ -13,24 +13,8 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     using Web;
     using Xunit;
 
-    public class RequestExtensionsTests : IDisposable
+    public class RequestExtensionsTests : IClassFixture<AppHostFixture>
     {
-        private ServiceStackHost appHost;
-
-        public RequestExtensionsTests()
-        {
-            if (ServiceStackHost.Instance == null)
-            {
-                appHost = new BasicAppHost { TestMode = true }.Init();
-            }
-        }
-
-        public void Dispose()
-        {
-            appHost?.Dispose();
-            appHost = null;
-        }
-
         [Theory, InlineAutoData]
         public void GetRequestCorrelationId_ReturnsRequestFromHeader(string header)
         {

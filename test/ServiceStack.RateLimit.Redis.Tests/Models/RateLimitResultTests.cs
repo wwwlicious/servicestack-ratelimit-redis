@@ -7,7 +7,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Models
     using Redis.Models;
     using Xunit;
 
-    public class RateLimitResultTests
+    public class RateLimitResultTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void Results_DefaultedToEmptyArray()

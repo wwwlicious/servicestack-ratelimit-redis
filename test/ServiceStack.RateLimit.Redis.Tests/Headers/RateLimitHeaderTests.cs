@@ -11,7 +11,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Headers
     using Redis.Models;
     using Xunit;
 
-    public class RateLimitHeaderTests
+    public class RateLimitHeaderTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void Create_ReturnsEmptyList_IfPassedNull()

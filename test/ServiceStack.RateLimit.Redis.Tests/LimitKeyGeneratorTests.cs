@@ -15,19 +15,13 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Xunit;
 
     [Collection("LimitKeyGeneratorTests")]
-    public class LimitKeyGeneratorTests : IDisposable
+    public class LimitKeyGeneratorTests : IClassFixture<AppHostFixture>
     {
-        private ServiceStackHost appHost;
-
-        public LimitKeyGeneratorTests()
+        
+        public LimitKeyGeneratorTests(AppHostFixture fixture)
         {
-            if (ServiceStackHost.Instance == null)
-            {
-                appHost = new BasicAppHost { TestMode = true }.Init();
-
-                // The GetConsumerId method requires an AuthUserSession.
-                AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(appHost.AppSettings));
-            }
+            // The GetConsumerId method requires an AuthUserSession.
+            AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(fixture.AppHost.AppSettings));
         }
 
         private static LimitKeyGenerator GetGenerator() => new LimitKeyGenerator();
@@ -177,14 +171,8 @@ namespace ServiceStack.RateLimit.Redis.Tests
             A.CallTo(() => authSession.UserAuthId).Returns(userAuthId);
 
             // From http://stackoverflow.com/questions/34064277/passing-session-in-unit-test
-            request.Items[SessionFeature.RequestItemsSessionKey] = authSession;
+            request.Items[Keywords.Session] = authSession;
             return authSession;
-        }
-
-        public void Dispose()
-        {
-            appHost?.Dispose();
-            appHost = null;
         }
     }
 
