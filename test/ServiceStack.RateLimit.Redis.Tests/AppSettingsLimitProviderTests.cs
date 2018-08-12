@@ -15,31 +15,31 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Testing;
     using Xunit;
 
-    public class LimitProviderBaseTests : IClassFixture<AppHostFixture>
+    public class AppSettingsLimitProviderTests : IClassFixture<AppHostFixture>
     {
-        private readonly LimitProviderBase limitProvider;
+        private readonly AppSettingsLimitProvider limitProvider;
         private readonly ILimitKeyGenerator keyGenerator;
         private readonly IAppSettings appSetting;
 
-        public LimitProviderBaseTests()
+        public AppSettingsLimitProviderTests()
         {
             keyGenerator = A.Fake<ILimitKeyGenerator>();
             appSetting = A.Fake<IAppSettings>();
 
-            limitProvider = new LimitProviderBase(keyGenerator, appSetting);
+            limitProvider = new AppSettingsLimitProvider(keyGenerator, appSetting);
         }
 
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfKeyGeneratorNull()
         {
-            Action action = () => new LimitProviderBase(null, A.Fake<IAppSettings>());
+            Action action = () => new AppSettingsLimitProvider(null, A.Fake<IAppSettings>());
             action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfAppSettingNull()
         {
-            Action action = () => new LimitProviderBase(A.Fake<ILimitKeyGenerator>(), null);
+            Action action = () => new AppSettingsLimitProvider(A.Fake<ILimitKeyGenerator>(), null);
             action.Should().Throw<ArgumentNullException>();
         }
 

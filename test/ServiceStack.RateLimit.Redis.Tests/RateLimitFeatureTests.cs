@@ -82,7 +82,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var feature = GetSut(false);
             feature.Register(appHost);
 
-            feature.LimitProvider.Should().BeOfType<LimitProviderBase>();
+            feature.LimitProvider.Should().BeOfType<AppSettingsLimitProvider>();
         }
 
         [Fact]

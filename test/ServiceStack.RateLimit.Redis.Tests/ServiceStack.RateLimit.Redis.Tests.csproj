@@ -105,9 +105,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostFixture.cs" />
+    <Compile Include="AttributeLimitProviderTests.cs" />
     <Compile Include="Headers\RateLimitHeaderTests.cs" />
     <Compile Include="LimitKeyGeneratorTests.cs" />
-    <Compile Include="LimitProviderBaseTests.cs" />
+    <Compile Include="AppSettingsLimitProviderTests.cs" />
     <Compile Include="Models\RateLimitResultTests.cs" />
     <Compile Include="Models\RateLimitTimeResultTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -3,7 +3,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 namespace ServiceStack.RateLimit.Redis
 {
-    using System.Collections.Generic;
     using System.Linq;
     using Configuration;
     using Interfaces;
@@ -12,34 +11,19 @@ namespace ServiceStack.RateLimit.Redis
     using Utilities;
     using Web;
 
-    public class LimitProviderBase : ILimitProvider
+    public class AppSettingsLimitProvider : ILimitProvider
     {
-        private const string ScriptKey = "script:ratelimit";
-        private const int DefaultPerMinute = 10;
-        private const int DefaultPerHour = 30;
-
         private readonly ILimitKeyGenerator keyGenerator;
-        private readonly LimitGroup defaultLimits;
         private readonly IAppSettings appSettings;
-        private readonly ILog log = LogManager.GetLogger(typeof(LimitProviderBase));
+        private readonly ILog log = LogManager.GetLogger(typeof(AppSettingsLimitProvider));
 
-        public LimitProviderBase(ILimitKeyGenerator keyGenerator, IAppSettings appSettings)
+        public AppSettingsLimitProvider(ILimitKeyGenerator keyGenerator, IAppSettings appSettings)
         {
             keyGenerator.ThrowIfNull(nameof(keyGenerator));
             appSettings.ThrowIfNull(nameof(appSettings));
 
             this.keyGenerator = keyGenerator;
             this.appSettings = appSettings;
-
-            // This is purely to ensure that we always have a default limit
-            defaultLimits = new LimitGroup
-            {
-                Limits = new List<LimitPerSecond>
-                {
-                    new LimitPerSecond { Seconds = 60, Limit = DefaultPerMinute },
-                    new LimitPerSecond { Seconds = 3600, Limit = DefaultPerHour }
-                }
-            };
         }
 
         public Limits GetLimits(IRequest request)
@@ -50,14 +34,14 @@ namespace ServiceStack.RateLimit.Redis
             return new Limits
             {
                 // Return default if none found
-                Request = requestLimits.HasValue ? requestLimits.Value : defaultLimits,
+                Request = requestLimits.HasValue ? requestLimits.Value : LimitProviderConstants.DefaultLimits,
                 User = userLimits.HasValue ? userLimits.Value : null
             };
         }
 
         public string GetRateLimitScriptId()
         {
-            return appSettings.GetString(ScriptKey);
+            return appSettings.GetString(LimitProviderConstants.ScriptKey);
         }
 
         protected virtual Maybe<LimitGroup> GetConfigLimit(params string[] keys)
