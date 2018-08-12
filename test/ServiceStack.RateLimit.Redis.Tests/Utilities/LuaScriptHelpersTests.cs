@@ -5,7 +5,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
 {
     using FakeItEasy;
     using FluentAssertions;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture.Xunit2;
     using Redis.Utilities;
     using ServiceStack.Redis;
     using Xunit;

@@ -7,9 +7,9 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using FakeItEasy;
     using FluentAssertions;
     using Interfaces;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoFakeItEasy;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture;
+    using AutoFixture.AutoFakeItEasy;
+    using AutoFixture.Xunit2;
     using Redis.Models;
     using ServiceStack;
     using ServiceStack.Redis;
@@ -17,15 +17,21 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    public class RateLimitFeatureTests
+    public class RateLimitFeatureTests : IDisposable
     {
         private readonly ILimitKeyGenerator keyGenerator;
         private readonly ILimitProvider limitProvider;
         private readonly IRedisClientsManager redisManager;
         private readonly Limits limit;
+        private ServiceStackHost appHost;
 
         public RateLimitFeatureTests()
         {
+            if (ServiceStackHost.Instance == null)
+            {
+                appHost = new BasicAppHost { TestMode = true }.Init();
+            }
+
             redisManager = A.Fake<IRedisClientsManager>();
             limitProvider = A.Fake<ILimitProvider>();
             keyGenerator = A.Fake<ILimitKeyGenerator>();
@@ -33,6 +39,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
             limit = fixture.Create<Limits>();
             A.CallTo(() => limitProvider.GetLimits(A<IRequest>.Ignored)).Returns(limit);
+        }
+        public void Dispose()
+        {
+            appHost?.Dispose();
+            appHost = null;
         }
 
         private RateLimitFeature GetSut(bool setupDefaults = true)
@@ -51,7 +62,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Ctor_ThrowsArgumentNullException_IfRedisManagerNull()
         {
             Action action = () => new RateLimitFeature(null);
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -198,7 +209,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory, InlineAutoData]
-        public void ProcessRequest_ExecutesLuaScript(string sha1, RateLimitResult rateLimitResult)
+        public void ProcessRequest_ExecutesLuaScriptWithLimit(string sha1, RateLimitResult rateLimitResult)
         {
             var client = A.Fake<IRedisClient>();
             A.CallTo(() => redisManager.GetClient()).Returns(client);

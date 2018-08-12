@@ -10,7 +10,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using FakeItEasy;
     using FluentAssertions;
     using Interfaces;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture.Xunit2;
     using Redis.Models;
     using Testing;
     using Xunit;
@@ -33,14 +33,14 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Ctor_ThrowsArgumentNullException_IfKeyGeneratorNull()
         {
             Action action = () => new LimitProviderBase(null, A.Fake<IAppSettings>());
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfAppSettingNull()
         {
             Action action = () => new LimitProviderBase(A.Fake<ILimitKeyGenerator>(), null);
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Theory, AutoData]

@@ -8,7 +8,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Auth;
     using FakeItEasy;
     using FluentAssertions;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture.Xunit2;
     using ServiceStack;
     using Testing;
     using Web;
@@ -52,7 +52,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
 
             Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
 
-            action.ShouldThrow<AuthenticationException>();
+            action.Should().Throw<AuthenticationException>();
         }
 
         [Theory, AutoData]
@@ -184,6 +184,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Dispose()
         {
             appHost?.Dispose();
+            appHost = null;
         }
     }
 
@@ -207,7 +208,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
 
                 Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
 
-                action.ShouldThrow<InvalidOperationException>();
+                action.Should().Throw<InvalidOperationException>();
             });
         }
 

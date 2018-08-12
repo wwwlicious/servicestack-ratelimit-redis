@@ -24,7 +24,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
         {
             Action action = () => { var x = new Maybe<string>().Value; };
 
-            action.ShouldThrow<InvalidOperationException>().WithMessage("Nullable object must have a value");
+            action.Should().Throw<InvalidOperationException>().WithMessage("Nullable object must have a value");
         }
 
         [Fact]
