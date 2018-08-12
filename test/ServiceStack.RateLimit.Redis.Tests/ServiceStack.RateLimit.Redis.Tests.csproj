@@ -109,6 +109,7 @@
     <Compile Include="Headers\RateLimitHeaderTests.cs" />
     <Compile Include="LimitKeyGeneratorTests.cs" />
     <Compile Include="AppSettingsLimitProviderTests.cs" />
+    <Compile Include="LimitRateAttributeTests.cs" />
     <Compile Include="Models\RateLimitResultTests.cs" />
     <Compile Include="Models\RateLimitTimeResultTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

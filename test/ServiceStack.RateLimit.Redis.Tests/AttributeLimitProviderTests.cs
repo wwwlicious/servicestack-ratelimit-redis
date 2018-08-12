@@ -1,18 +1,19 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this 
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-using System;
-using System.Linq;
-using AutoFixture.Xunit2;
-using FakeItEasy;
-using FluentAssertions;
-using ServiceStack.Configuration;
-using ServiceStack.Testing;
-using Xunit;
+﻿// // This Source Code Form is subject to the terms of the Mozilla Public
+// // License, v. 2.0. If a copy of the MPL was not distributed with this 
+// // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 namespace ServiceStack.RateLimit.Redis.Tests
 {
+    using System;
+    using System.Linq;
+    using AutoFixture.Xunit2;
+    using Configuration;
+    using FakeItEasy;
+    using FluentAssertions;
+    using Redis.Models;
+    using Testing;
+    using Xunit;
+
     public class AttributeLimitProviderTests : IClassFixture<AppHostFixture>
     {
         public AttributeLimitProviderTests()
@@ -29,8 +30,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [AutoData]
         public void GetRateLimitScriptId_ReturnsAppSetting(string scriptId)
         {
-            const string scriptKey = "script:ratelimit";
-            A.CallTo(() => appSetting.GetString(scriptKey)).Returns(scriptId);
+            A.CallTo(() => appSetting.GetString(LimitProviderConstants.ScriptKey)).Returns(scriptId);
 
             var result = limitProvider.GetRateLimitScriptId();
 
@@ -66,6 +66,46 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var limits = limitProvider.GetLimits(new MockHttpRequest());
 
             limits.User.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetLimits_ReturnsRequestLimitsFromRequestItems_IfFound()
+        {
+            var requestLimits = new LimitGroup();
+            var request = new MockHttpRequest
+            {
+                Items =
+                {
+                    [LimitRateAttribute.RequestItemName] = new Limits
+                    {
+                        Request = requestLimits
+                    }
+                }
+            };
+
+            var limits = limitProvider.GetLimits(request);
+
+            limits.Request.Should().Be(requestLimits);
+        }
+
+        [Fact]
+        public void GetLimits_ReturnsUserLimitsFromRequestItems_IfFound()
+        {
+            var userLimits = new LimitGroup();
+            var request = new MockHttpRequest
+            {
+                Items =
+                {
+                    [LimitRateAttribute.RequestItemName] = new Limits
+                    {
+                        User = userLimits
+                    }
+                }
+            };
+
+            var limits = limitProvider.GetLimits(request);
+
+            limits.User.Should().Be(userLimits);
         }
     }
 }
