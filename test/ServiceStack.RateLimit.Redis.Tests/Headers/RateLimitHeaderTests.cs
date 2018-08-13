@@ -6,12 +6,12 @@ namespace ServiceStack.RateLimit.Redis.Tests.Headers
     using System.Collections.Generic;
     using System.Linq;
     using FluentAssertions;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture.Xunit2;
     using Redis.Headers;
     using Redis.Models;
     using Xunit;
 
-    public class RateLimitHeaderTests
+    public class RateLimitHeaderTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void Create_ReturnsEmptyList_IfPassedNull()

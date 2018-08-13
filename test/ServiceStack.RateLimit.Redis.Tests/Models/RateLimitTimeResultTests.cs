@@ -7,7 +7,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Models
     using Redis.Models;
     using Xunit;
 
-    public class RateLimitTimeResultTests
+    public class RateLimitTimeResultTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void Remaining_ReturnsCorrect()

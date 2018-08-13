@@ -7,9 +7,9 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using FakeItEasy;
     using FluentAssertions;
     using Interfaces;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoFakeItEasy;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture;
+    using AutoFixture.AutoFakeItEasy;
+    using AutoFixture.Xunit2;
     using Redis.Models;
     using ServiceStack;
     using ServiceStack.Redis;
@@ -17,7 +17,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    public class RateLimitFeatureTests
+    public class RateLimitFeatureTests : IClassFixture<AppHostFixture>
     {
         private readonly ILimitKeyGenerator keyGenerator;
         private readonly ILimitProvider limitProvider;
@@ -51,7 +51,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Ctor_ThrowsArgumentNullException_IfRedisManagerNull()
         {
             Action action = () => new RateLimitFeature(null);
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             var feature = GetSut(false);
             feature.Register(appHost);
 
-            feature.LimitProvider.Should().BeOfType<LimitProviderBase>();
+            feature.LimitProvider.Should().BeOfType<AppSettingsLimitProvider>();
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         }
 
         [Theory, InlineAutoData]
-        public void ProcessRequest_ExecutesLuaScript(string sha1, RateLimitResult rateLimitResult)
+        public void ProcessRequest_ExecutesLuaScriptWithLimit(string sha1, RateLimitResult rateLimitResult)
         {
             var client = A.Fake<IRedisClient>();
             A.CallTo(() => redisManager.GetClient()).Returns(client);

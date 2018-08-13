@@ -192,7 +192,7 @@ namespace ServiceStack.RateLimit.Redis
                 KeyGenerator = new LimitKeyGenerator();
 
             if (LimitProvider == null)
-                LimitProvider = new LimitProviderBase(KeyGenerator, appHost.AppSettings);
+                LimitProvider = new AppSettingsLimitProvider(KeyGenerator, appHost.AppSettings);
         }
     }
 }

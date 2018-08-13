@@ -8,7 +8,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     using Redis.Utilities;
     using Xunit;
 
-    public class MaybeTests
+    public class MaybeTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void DefaultCtor_HasValueFalse() => new Maybe<string>().HasValue.Should().BeFalse();
@@ -24,7 +24,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
         {
             Action action = () => { var x = new Maybe<string>().Value; };
 
-            action.ShouldThrow<InvalidOperationException>().WithMessage("Nullable object must have a value");
+            action.Should().Throw<InvalidOperationException>().WithMessage("Nullable object must have a value");
         }
 
         [Fact]

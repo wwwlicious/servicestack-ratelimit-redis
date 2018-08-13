@@ -49,7 +49,7 @@ namespace ServiceStack.RateLimit.Redis
 
         public virtual string GetConsumerId(IRequest request)
         {
-            if (AuthenticateService.AuthProviders == null)
+            if (AuthenticateService.GetAuthProviders() == null)
             {
                 throw new InvalidOperationException(
                     "AuthService not initialized. This is required for generating default ConsumerId for RateLimitting.");

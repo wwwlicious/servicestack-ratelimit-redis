@@ -5,12 +5,12 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
 {
     using FakeItEasy;
     using FluentAssertions;
-    using Ploeh.AutoFixture.Xunit2;
+    using AutoFixture.Xunit2;
     using Redis.Utilities;
     using ServiceStack.Redis;
     using Xunit;
 
-    public class LuaScriptHelpersTests
+    public class LuaScriptHelpersTests : IClassFixture<AppHostFixture>
     {
         [Fact]
         public void GetLuaScript_ReturnsScript()
