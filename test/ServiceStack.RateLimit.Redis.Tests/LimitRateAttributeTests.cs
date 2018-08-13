@@ -12,7 +12,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    public class LimitRateAttributeTests : IClassFixture<AppHostFixture>
+    public class LimitRateAttributeTests
     {
         [Theory]
         [InlineData(-1)]

@@ -16,7 +16,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Testing;
     using Xunit;
 
-    public class AppSettingsLimitProviderTests : IClassFixture<AppHostFixture>
+    public class AppSettingsLimitProviderTests
     {
         public AppSettingsLimitProviderTests()
         {
@@ -47,8 +47,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             var mockHttpRequest = new MockHttpRequest();
 
-            A.CallTo(() => keyGenerator.GetConfigKeysForRequest(mockHttpRequest))
-                .Returns(requestKeys);
+            A.CallTo(() => keyGenerator.GetConfigKeysForRequest(mockHttpRequest)).Returns(requestKeys);
             A.CallTo(() => appSetting.Get<LimitGroup>(requestKeys.First())).Returns(limitGroup);
 
             var limits = limitProvider.GetLimits(mockHttpRequest);
@@ -62,8 +61,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             var mockHttpRequest = new MockHttpRequest();
 
-            A.CallTo(() => keyGenerator.GetConfigKeysForUser(mockHttpRequest))
-                .Returns(userKeys);
+            A.CallTo(() => keyGenerator.GetConfigKeysForUser(mockHttpRequest)).Returns(userKeys);
             A.CallTo(() => appSetting.Get<LimitGroup>(userKeys.First())).Returns(limitGroup);
 
             var limits = limitProvider.GetLimits(mockHttpRequest);

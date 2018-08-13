@@ -14,9 +14,10 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Testing;
     using Xunit;
 
-    public class AttributeLimitProviderTests : IClassFixture<AppHostFixture>
+    [Collection("RateLimitFeature")]
+    public class AttributeLimitProviderTests
     {
-        public AttributeLimitProviderTests()
+        public AttributeLimitProviderTests(RateLimitAppHostFixture fixture)
         {
             appSetting = A.Fake<IAppSettings>();
 

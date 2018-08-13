@@ -14,11 +14,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    [Collection("LimitKeyGeneratorTests")]
-    public class LimitKeyGeneratorTests : IClassFixture<AppHostFixture>
+    [Collection("RateLimitFixture")]
+    public class LimitKeyGeneratorTests
     {
         
-        public LimitKeyGeneratorTests(AppHostFixture fixture)
+        public LimitKeyGeneratorTests(RateLimitAppHostFixture fixture)
         {
             // The GetConsumerId method requires an AuthUserSession.
             AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(fixture.AppHost.AppSettings));

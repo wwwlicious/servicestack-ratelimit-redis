@@ -55,7 +55,6 @@ namespace DemoService
             Container.Register<IRedisClientsManager>(new BasicRedisClientManager(redisConnection));
 
             // Setup basic auth
-            Container.Register<ICacheClient>(new MemoryCacheClient());
             var userRep = new InMemoryAuthRepository();
             Container.Register<IUserAuthRepository>(userRep);
 

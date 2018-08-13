@@ -1,97 +1,52 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1BEF4F02-645E-4536-B15C-BC735F7058F7}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.RateLimit.Redis</RootNamespace>
-    <AssemblyName>ServiceStack.RateLimit.Redis</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <Configurations>Debug;Release</Configurations>
+    <Title>ServiceStack.RateLimit.Redis</Title>
+    <Description>Plugin for ServiceStack that adds rate limiting to ensure endpoints are protected from misuse</Description>
+    <Authors>Donald Gray (@donaldgray);Scott Mackay (@wwwlicious)</Authors>
+    <Owners>Scott Mackay (@wwwlicious)</Owners>
+    <Copyright>Copyright (c) wwwlicious 2016 - Present</Copyright>
+    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <NoWarn>CS1591</NoWarn>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <PackageId>ServiceStack.RateLimit.Redis</PackageId>
+    <Version>$(Version)</Version>
+    <PackageVersion>$(PackageVersion)</PackageVersion>
+    <PackageOutputPath>$(PackageOutputPath)</PackageOutputPath>
+    <PackageLicenseUrl>https://opensource.org/licenses/MPL-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/wwwlicious/servicestack-ratelimit-redis</PackageProjectUrl>
+    <PackageIconUrl>https://servicestack.net/img/logo-32.png</PackageIconUrl>
+    <ReleaseNotes>https://github.com/wwwlicious/servicestack-ratelimit-redis/releases</ReleaseNotes>
+    <PackageTags>servicestack plugin rate limit ratelimit microservices redis protect</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <RepositoryUrl>https://github.com/wwwlicious/servicestack-ratelimit-redis</RepositoryUrl>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Debug|net452'">
+    <DefineConstants>TRACE;DEBUG;NET452;</DefineConstants>
+    <DocumentationFile>bin\Debug\net452\ServiceStack.RateLimit.Redis.xml</DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
+    <DefineConstants>NET452</DefineConstants>
+    <DocumentationFile>bin\Release\net452\ServiceStack.RateLimit.Redis.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Debug|netstandard2.0'">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0;</DefineConstants>
+    <DocumentationFile>bin\Debug\netstandard2.0\ServiceStack.RateLimit.Redis.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|netstandard2.0'">
+    <DefineConstants>NETSTANDARD2_0</DefineConstants>
+    <DocumentationFile>bin\Release\netstandard2.0\ServiceStack.RateLimit.Redis.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.4.5.14\lib\net45\ServiceStack.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Client, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Client.4.5.14\lib\net45\ServiceStack.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Common, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Common.4.5.14\lib\net45\ServiceStack.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Interfaces.4.5.14\lib\portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10\ServiceStack.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Redis, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Redis.4.5.14\lib\net45\ServiceStack.Redis.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Text, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Text.4.5.14\lib\net45\ServiceStack.Text.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AttributeLimitProvider.cs" />
-    <Compile Include="Headers\RateLimitStatus.cs" />
-    <Compile Include="Headers\RateLimitHeader.cs" />
-    <Compile Include="Headers\HttpHeaders.cs" />
-    <Compile Include="Interfaces\ILimitKeyGenerator.cs" />
-    <Compile Include="Interfaces\ILimitProvider.cs" />
-    <Compile Include="LimitKeyGenerator.cs" />
-    <Compile Include="AppSettingsLimitProvider.cs" />
-    <Compile Include="LimitProviderConstants.cs" />
-    <Compile Include="LimitRateAttribute.cs" />
-    <Compile Include="Models\LimitPerSecond.cs" />
-    <Compile Include="Models\LimitGroup.cs" />
-    <Compile Include="Models\Limits.cs" />
-    <Compile Include="Models\RateLimitResult.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RateLimitFeature.cs" />
-    <Compile Include="Utilities\LuaScriptHelpers.cs" />
-    <Compile Include="Utilities\Maybe.cs" />
-    <Compile Include="Utilities\RequestExtensions.cs" />
+    <None Remove="Scripts\RateLimitHash.lua" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\RateLimitHash.lua" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <PackageReference Include="ServiceStack.Server" Version="4.5.14" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

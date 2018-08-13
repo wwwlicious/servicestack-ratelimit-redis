@@ -13,7 +13,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     using Web;
     using Xunit;
 
-    public class RequestExtensionsTests : IClassFixture<AppHostFixture>
+    public class RequestExtensionsTests
     {
         [Theory, InlineAutoData]
         public void GetRequestCorrelationId_ReturnsRequestFromHeader(string header)

@@ -17,7 +17,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    public class RateLimitFeatureTests : IClassFixture<AppHostFixture>
+    public class RateLimitFeatureTests
     {
         private readonly ILimitKeyGenerator keyGenerator;
         private readonly ILimitProvider limitProvider;
