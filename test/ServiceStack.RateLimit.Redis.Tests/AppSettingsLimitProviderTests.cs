@@ -16,6 +16,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Testing;
     using Xunit;
 
+    [Collection("RateLimitFeature")]
     public class AppSettingsLimitProviderTests
     {
         public AppSettingsLimitProviderTests()
