@@ -22,7 +22,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public AppSettingsLimitProviderTests()
         {
             keyGenerator = A.Fake<ILimitKeyGenerator>();
-            appSetting = A.Fake<IAppSettings>();
+            appSetting = new SimpleAppSettings();
 
             limitProvider = new AppSettingsLimitProvider(keyGenerator, appSetting);
         }
@@ -35,39 +35,33 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [AutoData]
         public void GetRateLimitScriptId_ReturnsAppSetting(string scriptId)
         {
-            A.CallTo(() => appSetting.GetString(LimitProviderConstants.ScriptKey)).Returns(scriptId);
+            appSetting.Set(LimitProviderConstants.ScriptKey, scriptId);
 
-            var result = limitProvider.GetRateLimitScriptId();
-
-            result.Should().Be(scriptId);
+            limitProvider.GetRateLimitScriptId().Should().Be(scriptId);
         }
 
         [Theory]
         [InlineAutoData]
-        public void GetLimits_ReturnsRequestLimits_FromConfig(IEnumerable<string> requestKeys, LimitGroup limitGroup)
+        public void GetLimits_ReturnsRequestLimits_FromConfig(string[] requestKeys, LimitGroup limitGroup)
         {
-            var mockHttpRequest = new MockHttpRequest();
+            var request = new MockHttpRequest();
+            appSetting.Set(requestKeys.First(), limitGroup);
 
-            A.CallTo(() => keyGenerator.GetConfigKeysForRequest(mockHttpRequest)).Returns(requestKeys);
-            A.CallTo(() => appSetting.Get<LimitGroup>(requestKeys.First())).Returns(limitGroup);
-
-            var limits = limitProvider.GetLimits(mockHttpRequest);
-
-            limits.Request.Should().Be(limitGroup);
+            A.CallTo(() => keyGenerator.GetConfigKeysForRequest(request)).Returns(requestKeys);
+            
+            limitProvider.GetLimits(request).Request.Should().BeEquivalentTo(limitGroup);
         }
 
         [Theory]
         [InlineAutoData]
         public void GetLimits_ReturnsUserLimits_FromConfig(IEnumerable<string> userKeys, LimitGroup limitGroup)
         {
-            var mockHttpRequest = new MockHttpRequest();
+            var request = new MockHttpRequest();
+            appSetting.Set(userKeys.First(), limitGroup);
 
-            A.CallTo(() => keyGenerator.GetConfigKeysForUser(mockHttpRequest)).Returns(userKeys);
-            A.CallTo(() => appSetting.Get<LimitGroup>(userKeys.First())).Returns(limitGroup);
+            A.CallTo(() => keyGenerator.GetConfigKeysForUser(request)).Returns(userKeys);
 
-            var limits = limitProvider.GetLimits(mockHttpRequest);
-
-            limits.User.Should().Be(limitGroup);
+            limitProvider.GetLimits(request).User.Should().BeEquivalentTo(limitGroup);
         }
 
         [Fact]
@@ -80,32 +74,26 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfKeyGeneratorNull()
         {
-            Action action = () => new AppSettingsLimitProvider(null, A.Fake<IAppSettings>());
+            Action action = () => new AppSettingsLimitProvider(null, new SimpleAppSettings());
             action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void GetLimits_AlwaysReturnsObject()
         {
-            var limits = limitProvider.GetLimits(new MockHttpRequest());
-
-            limits.Should().NotBeNull();
+            limitProvider.GetLimits(new MockHttpRequest()).Should().NotBeNull();
         }
 
         [Fact]
         public void GetLimits_ReturnsDefaultRequestLimits_IfNoneFound()
         {
-            var limits = limitProvider.GetLimits(new MockHttpRequest());
-
-            limits.Request.Limits.Count().Should().BeGreaterThan(0);
+            limitProvider.GetLimits(new MockHttpRequest()).Request.Limits.Count().Should().BeGreaterThan(0);
         }
 
         [Fact]
         public void GetLimits_ReturnsNoUserLimits_IfNoneFound()
         {
-            var limits = limitProvider.GetLimits(new MockHttpRequest());
-
-            limits.User.Should().BeNull();
+            limitProvider.GetLimits(new MockHttpRequest()).User.Should().BeNull();
         }
     }
 }

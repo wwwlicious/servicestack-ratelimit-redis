@@ -19,7 +19,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     {
         public AttributeLimitProviderTests(RateLimitAppHostFixture fixture)
         {
-            appSetting = A.Fake<IAppSettings>();
+            appSetting = new SimpleAppSettings();
 
             limitProvider = new AttributeLimitProvider(appSetting);
         }
@@ -31,11 +31,9 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [AutoData]
         public void GetRateLimitScriptId_ReturnsAppSetting(string scriptId)
         {
-            A.CallTo(() => appSetting.GetString(LimitProviderConstants.ScriptKey)).Returns(scriptId);
+            appSetting.Set(LimitProviderConstants.ScriptKey, scriptId);
 
-            var result = limitProvider.GetRateLimitScriptId();
-
-            result.Should().Be(scriptId);
+            limitProvider.GetRateLimitScriptId().Should().Be(scriptId);
         }
 
         [Fact]
@@ -48,25 +46,19 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void GetLimits_AlwaysReturnsObject()
         {
-            var limits = limitProvider.GetLimits(new MockHttpRequest());
-
-            limits.Should().NotBeNull();
+            limitProvider.GetLimits(new MockHttpRequest()).Should().NotBeNull();
         }
 
         [Fact]
         public void GetLimits_ReturnsDefaultRequestLimits_IfNoneFound()
         {
-            var limits = limitProvider.GetLimits(new MockHttpRequest());
-
-            limits.Request.Limits.Count().Should().BeGreaterThan(0);
+            limitProvider.GetLimits(new MockHttpRequest()).Request.Limits.Count().Should().BeGreaterThan(0);
         }
 
         [Fact]
         public void GetLimits_ReturnsNoUserLimits_IfNoneFound()
         {
-            var limits = limitProvider.GetLimits(new MockHttpRequest());
-
-            limits.User.Should().BeNull();
+            limitProvider.GetLimits(new MockHttpRequest()).User.Should().BeNull();
         }
 
         [Fact]
@@ -84,9 +76,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
                 }
             };
 
-            var limits = limitProvider.GetLimits(request);
-
-            limits.Request.Should().Be(requestLimits);
+            limitProvider.GetLimits(request).Request.Should().Be(requestLimits);
         }
 
         [Fact]
@@ -104,9 +94,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
                 }
             };
 
-            var limits = limitProvider.GetLimits(request);
-
-            limits.User.Should().Be(userLimits);
+            limitProvider.GetLimits(request).User.Should().Be(userLimits);
         }
     }
 }

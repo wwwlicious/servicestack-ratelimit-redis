@@ -17,13 +17,6 @@ namespace ServiceStack.RateLimit.Redis.Tests
     [Collection("RateLimitFeature")]
     public class LimitKeyGeneratorTests
     {
-        
-        public LimitKeyGeneratorTests(RateLimitAppHostFixture fixture)
-        {
-            // The GetConsumerId method requires an AuthUserSession.
-            //AuthenticateService.Init(() => new AuthUserSession(), new BasicAuthProvider(fixture.AppHost.AppSettings));
-        }
-
         private static LimitKeyGenerator GetGenerator() => new LimitKeyGenerator();
 
         [Theory, AutoData]
@@ -34,9 +27,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
 
             var keyGenerator = GetGenerator();
 
-            var requestId = keyGenerator.GetRequestId(request);
-
-            requestId.Should().BeEquivalentTo(request.OperationName);
+            keyGenerator.GetRequestId(request).Should().BeEquivalentTo(request.OperationName);
         }
 
         [Fact]
@@ -52,25 +43,21 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Theory, AutoData]
         public void GetConsumerId_ReturnsUserId_IfAuthenticated(string userAuthId)
         {
-            MockHttpRequest request = new MockHttpRequest();
+            var request = new MockHttpRequest();
             var authSession = SetupAuthenticatedSession(userAuthId, request);
-
             var keyGenerator = GetGenerator();
-            var consumerId = keyGenerator.GetConsumerId(request);
 
-            consumerId.Should().Be(authSession.UserAuthId.ToLower());
+            keyGenerator.GetConsumerId(request).Should().Be(authSession.UserAuthId.ToLower());
         }
 
         [Fact]
         public void GetConfigKeysForRequest_ReturnsCorrectNumberOfKeys()
         {
-            MockHttpRequest request = new MockHttpRequest();
+            var request = new MockHttpRequest();
             SetupAuthenticatedSession("123", request);
-
             var keyGenerator = GetGenerator();
-            var keys = keyGenerator.GetConfigKeysForRequest(request);
 
-            keys.Count().Should().Be(3);
+            keyGenerator.GetConfigKeysForRequest(request).Count().Should().Be(3);
         }
 
         [Theory]
@@ -86,9 +73,8 @@ namespace ServiceStack.RateLimit.Redis.Tests
             SetupAuthenticatedSession(userAuthId, request);
 
             var keyGenerator = GetGenerator();
-            var keys = keyGenerator.GetConfigKeysForRequest(request);
 
-            keys.ToList()[index].Should().Be(key.ToLower());
+            keyGenerator.GetConfigKeysForRequest(request).ToList()[index].Should().Be(key.ToLower());
         }
 
         [Theory]
@@ -118,13 +104,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void GetConfigKeysForUser_ReturnsCorrectNumberOfKeys()
         {
-            MockHttpRequest request = new MockHttpRequest();
+            var request = new MockHttpRequest();
             SetupAuthenticatedSession("123", request);
-
             var keyGenerator = GetGenerator();
-            var keys = keyGenerator.GetConfigKeysForUser(request);
-
-            keys.Count().Should().Be(2);
+            
+            keyGenerator.GetConfigKeysForUser(request).Count().Should().Be(2);
         }
 
         [Theory]
@@ -133,16 +117,15 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void GetConfigKeysForUser_ReturnsResultsInOrder_ObeyDelimiterAndPrefix(string key, int index)
         {
             const string userAuthId = "userId";
-            MockHttpRequest request = new MockHttpRequest();
+            var request = new MockHttpRequest();
             SetupAuthenticatedSession(userAuthId, request);
 
             LimitKeyGenerator.Delimiter = "|";
             LimitKeyGenerator.Prefix = "test";
 
             var keyGenerator = GetGenerator();
-            var keys = keyGenerator.GetConfigKeysForUser(request);
-
-            keys.ToList()[index].Should().Be(key);
+            
+            keyGenerator.GetConfigKeysForUser(request).ToList()[index].Should().Be(key);
 
             // Now set the values back as they're static (avoid breaking tests)
             LimitKeyGenerator.Delimiter = "/";
@@ -155,13 +138,12 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void GetConfigKeysForUser_ReturnsResultsInOrder(string key, int index)
         {
             const string userAuthId = "userId";
-            MockHttpRequest request = new MockHttpRequest();
+            var request = new MockHttpRequest();
             SetupAuthenticatedSession(userAuthId, request);
 
             var keyGenerator = GetGenerator();
-            var keys = keyGenerator.GetConfigKeysForUser(request);
 
-            keys.ToList()[index].Should().Be(key);
+            keyGenerator.GetConfigKeysForUser(request).ToList()[index].Should().Be(key);
         }
 
         private static IAuthSession SetupAuthenticatedSession(string userAuthId, IRequest request)
@@ -173,39 +155,6 @@ namespace ServiceStack.RateLimit.Redis.Tests
             // From http://stackoverflow.com/questions/34064277/passing-session-in-unit-test
             request.Items[Keywords.Session] = authSession;
             return authSession;
-        }
-    }
-
-    [Collection("LimitKeyGeneratorTests")]
-    public class LimitKeyGeneratorHostlessTests : IDisposable
-    {
-        private readonly AppDomain noAuthDomain;
-        public LimitKeyGeneratorHostlessTests()
-        {
-            noAuthDomain = AppDomain.CreateDomain("NoAuthDomain", AppDomain.CurrentDomain.Evidence,
-                AppDomain.CurrentDomain.SetupInformation);
-        }
-
-        [Fact(Skip = "maybe move authprovider check to apphost startup and call explicitly in fake apphost to test")]
-        public void GetConsumerId_ThrowsInvalidOperationException_IfNoAuthProviders()
-        {
-            // NOTE Running this in separate apphost as internally checks a public static prop which may have been set in other tests
-            noAuthDomain.DoCallBack(() =>
-            {
-                var keyGenerator = new LimitKeyGenerator();
-
-                Action action = () => keyGenerator.GetConsumerId(new MockHttpRequest());
-
-                action.Should().Throw<InvalidOperationException>();
-            });
-        }
-
-        public void Dispose()
-        {
-            if (noAuthDomain != null)
-            {
-                AppDomain.Unload(noAuthDomain);
-            }
         }
     }
 }
