@@ -12,7 +12,7 @@ namespace ServiceStack.RateLimit.Redis
         public const int DefaultPerMinute = 10;
         public const int DefaultPerHour = 30;
 
-        public static readonly LimitGroup DefaultLimits=new LimitGroup
+        public static readonly LimitGroup DefaultLimits = new LimitGroup
         {
             Limits = new List<LimitPerSecond>
             {

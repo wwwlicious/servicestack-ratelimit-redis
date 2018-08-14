@@ -63,8 +63,7 @@ namespace ServiceStack.RateLimit.Redis
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
-            var limits = req.Items.GetValueOrDefault(RequestItemName) as Limits;
-            if (limits == null)
+            if (!(req.Items.GetValueOrDefault(RequestItemName) is Limits limits))
             {
                 req.Items[RequestItemName] = new Limits
                 {

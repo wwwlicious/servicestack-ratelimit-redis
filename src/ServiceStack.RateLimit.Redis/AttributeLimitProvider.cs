@@ -15,15 +15,12 @@ namespace ServiceStack.RateLimit.Redis
 
         public AttributeLimitProvider(IAppSettings appSettings)
         {
-            appSettings.ThrowIfNull(nameof(appSettings));
-
-            this.appSettings = appSettings;
+            this.appSettings = appSettings.ThrowIfNull(nameof(appSettings));
         }
 
         public Limits GetLimits(IRequest request)
         {
-            var limits = request.Items.GetValueOrDefault(LimitRateAttribute.RequestItemName) as Limits;
-            if (limits != null)
+            if (request.Items.GetValueOrDefault(LimitRateAttribute.RequestItemName) is Limits limits)
             {
                 return limits;
             }

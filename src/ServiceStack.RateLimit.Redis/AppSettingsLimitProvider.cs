@@ -19,11 +19,8 @@ namespace ServiceStack.RateLimit.Redis
 
         public AppSettingsLimitProvider(ILimitKeyGenerator keyGenerator, IAppSettings appSettings)
         {
-            keyGenerator.ThrowIfNull(nameof(keyGenerator));
-            appSettings.ThrowIfNull(nameof(appSettings));
-
-            this.keyGenerator = keyGenerator;
-            this.appSettings = appSettings;
+            this.keyGenerator = keyGenerator.ThrowIfNull(nameof(keyGenerator));
+            this.appSettings = appSettings.ThrowIfNull(nameof(appSettings));
         }
 
         public Limits GetLimits(IRequest request)
