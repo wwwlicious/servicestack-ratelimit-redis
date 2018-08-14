@@ -20,32 +20,19 @@ namespace ServiceStack.RateLimit.Redis.Tests
     [Collection("RateLimitFeature")]
     public class RateLimitFeatureTests
     {
-        private readonly ILimitKeyGenerator keyGenerator;
-        private readonly ILimitProvider limitProvider;
-        private readonly IRedisClientsManager redisManager;
-        private readonly Limits limit;
+        private readonly RateLimitFeature rateLimitFeature;
+        private IServiceClient client;
+        private IServiceClient authenticatedClient;
 
-        public RateLimitFeatureTests()
+        public RateLimitFeatureTests(RateLimitAppHostFixture fixture)
         {
-            redisManager = A.Fake<IRedisClientsManager>();
-            limitProvider = A.Fake<ILimitProvider>();
-            keyGenerator = A.Fake<ILimitKeyGenerator>();
-
-            var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization());
-            limit = fixture.Create<Limits>();
-            A.CallTo(() => limitProvider.GetLimits(A<IRequest>.Ignored)).Returns(limit);
-        }
-
-        private RateLimitFeature GetSut(bool setupDefaults = true)
-        {
-            var feature = new RateLimitFeature(redisManager);
-
-            if (setupDefaults)
-            {
-                feature.LimitProvider = limitProvider;
-                feature.KeyGenerator = keyGenerator;
-            }
-            return feature;
+            client = fixture.CreateClient();
+            authenticatedClient = fixture.CreateAuthenticatedClient();
+            
+            rateLimitFeature = fixture.Apphost.GetPlugin<RateLimitFeature>();
+            
+            rateLimitFeature.LimitProviders.Should().HaveCount(2);
+            rateLimitFeature.KeyGenerator.Should().BeOfType<LimitKeyGenerator>();
         }
 
         [Fact]
@@ -55,162 +42,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact]
-        public void Register_SetsDefaultLimitKeyGenerator_IfNotSet()
-        {
-            var appHost = A.Fake<IAppHost>();
-            var feature = GetSut(false);
-            feature.Register(appHost);
-
-            feature.KeyGenerator.Should().BeOfType<LimitKeyGenerator>();
-        }
-
-        [Fact]
-        public void Register_DoesNotSetDefaultLimitKeyGenerator_IfSet()
-        {
-            var appHost = A.Fake<IAppHost>();
-            var feature = GetSut(false);
-            feature.KeyGenerator = keyGenerator;
-            feature.Register(appHost);
-
-            feature.KeyGenerator.Should().Be(keyGenerator);
-        }
-
-        [Fact]
-        public void Register_SetsDefaultLimitProvider_IfNotSet()
-        {
-            var appHost = A.Fake<IAppHost>();
-            var feature = GetSut(false);
-            feature.Register(appHost);
-
-            feature.LimitProvider.Should().BeOfType<AppSettingsLimitProvider>();
-        }
-
-        [Fact]
-        public void Register_DoesNotSetDefaultLimitProviderBase_IfSet()
-        {
-            var appHost = A.Fake<IAppHost>();
-            var feature = GetSut(false);
-            feature.LimitProvider = limitProvider;
-            feature.Register(appHost);
-
-            feature.LimitProvider.Should().Be(limitProvider);
-        }
-
-        [Fact]
-        public void Register_AddsGlobalRequestFilter()
-        {
-            var appHost = A.Fake<IAppHost>();
-            appHost.GlobalRequestFilters.Count.Should().Be(0);
-
-            var feature = GetSut();
-            feature.Register(appHost);
-
-            appHost.GlobalRequestFilters.Count.Should().Be(1);
-        }
-
-        [Fact]
-        public void ProcessRequest_CallsGetLimits()
-        {
-            var mockHttpRequest = new MockHttpRequest();
-            A.CallTo(() => limitProvider.GetLimits(mockHttpRequest)).Returns(null);
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            A.CallTo(() => limitProvider.GetLimits(mockHttpRequest)).MustHaveHappened();
-        }
-
-        [Fact]
-        public void ProcessRequest_HandlesNullLimit()
-        {
-            var mockHttpRequest = new MockHttpRequest();
-            A.CallTo(() => limitProvider.GetLimits(mockHttpRequest)).Returns(null);
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            // No assert here - not throwing is enough
-        }
-
-        [Fact]
-        public void ProcessRequest_GetsConsumerId()
-        {
-            var mockHttpRequest = new MockHttpRequest();
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            A.CallTo(() => keyGenerator.GetConsumerId(mockHttpRequest)).MustHaveHappened();
-        }
-
-        [Fact]
-        public void ProcessRequest_GetRequestId()
-        {
-            var mockHttpRequest = new MockHttpRequest();
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            A.CallTo(() => keyGenerator.GetRequestId(mockHttpRequest)).MustHaveHappened();
-        }
-
-        [Fact]
-        public void ProcessRequest_GetsRateLimitScriptFromConfig()
-        {
-            var mockHttpRequest = new MockHttpRequest();
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            A.CallTo(() => limitProvider.GetRateLimitScriptId()).MustHaveHappened();
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void ProcessRequest_RegistersNewScript_IfNoneInConfig(string sha1)
-        {
-            var mockHttpRequest = new MockHttpRequest();
-            A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
-            var client = A.Fake<IRedisClient>();
-            A.CallTo(() => redisManager.GetClient()).Returns(client);
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            A.CallTo(() => client.LoadLuaScript(A<string>.Ignored)).MustHaveHappened();
-        }
-
-        [Theory, InlineAutoData]
-        public void ProcessRequest_ExecutesLuaScript(string sha1)
-        {
-            var mockHttpRequest = new MockHttpRequest();
-            
-            var client = A.Fake<IRedisClient>();
-            A.CallTo(() => redisManager.GetClient()).Returns(client);
-            A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
-
-            var feature = GetSut();
-            feature.ProcessRequest(mockHttpRequest, new MockHttpResponse(), null);
-
-            A.CallTo(() => client.ExecLuaSha(sha1, A<string[]>.Ignored, A<string[]>.Ignored)).MustHaveHappened();
-        }
-
         [Theory, InlineAutoData]
         public void ProcessRequest_ExecutesLuaScriptWithLimit(string sha1, RateLimitResult rateLimitResult)
         {
-            var client = A.Fake<IRedisClient>();
-            A.CallTo(() => redisManager.GetClient()).Returns(client);
-            A.CallTo(() => limitProvider.GetRateLimitScriptId()).Returns(sha1);
-
-            A.CallTo(() => client.ExecLuaSha(A<string>.Ignored, A<string[]>.Ignored, A<string[]>.Ignored))
-                .Returns(new RedisText { Text = rateLimitResult.ToJson() });
-
-            var feature = GetSut();
             var mockHttpResponse = new MockHttpResponse();
-            feature.ProcessRequest(new MockHttpRequest(), mockHttpResponse, null);
+            rateLimitFeature.ProcessRequest(new MockHttpRequest(), mockHttpResponse, null);
 
             mockHttpResponse.Headers[Redis.Headers.HttpHeaders.RateLimitUser].Should().NotBeNullOrWhiteSpace();
             mockHttpResponse.Headers[Redis.Headers.HttpHeaders.RateLimitRequest].Should().NotBeNullOrWhiteSpace();
@@ -219,14 +55,9 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void ProcessRequest_Returns429_IfLimitBreached()
         {
-            var client = A.Fake<IRedisClient>();
-            A.CallTo(() => client.ExecLuaSha(A<string>.Ignored, A<string[]>.Ignored, A<string[]>.Ignored))
-                .Returns(new RedisText { Text = new RateLimitResult { Access = false }.ToJson() });
-
-            var feature = GetSut();
             var response = new MockHttpResponse();
 
-            feature.ProcessRequest(new MockHttpRequest(), response, null);
+            rateLimitFeature.ProcessRequest(new MockHttpRequest(), response, null);
 
             response.StatusCode.Should().Be(429);
         }
@@ -235,31 +66,29 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void ProcessRequest_ReturnsCustomCode_IfSetAndLimitBreached()
         {
             const int statusCode = 503;
-            var client = A.Fake<IRedisClient>();
-            A.CallTo(() => client.ExecLuaSha(A<string>.Ignored, A<string[]>.Ignored, A<string[]>.Ignored))
-                .Returns(new RedisText { Text = new RateLimitResult { Access = false }.ToJson() });
-
-            var feature = GetSut();
-            feature.LimitStatusCode = statusCode;
+            var defaultCode = rateLimitFeature.LimitStatusCode;
+            rateLimitFeature.LimitStatusCode = statusCode;
+            
             var response = new MockHttpResponse();
 
-            feature.ProcessRequest(new MockHttpRequest(), response, null);
+            rateLimitFeature.ProcessRequest(new MockHttpRequest(), response, null);
 
             response.StatusCode.Should().Be(statusCode);
+            
+            rateLimitFeature.LimitStatusCode = defaultCode;
         }
 
         [Fact]
         public void ProcessRequest_CallsRequestIdDelegate_IfProvided()
         {
             bool called = false;
-            var feature = GetSut();
-            feature.CorrelationIdExtractor = request =>
+            rateLimitFeature.CorrelationIdExtractor = request =>
             {
                 called = true;
                 return "124";
             };
 
-            feature.ProcessRequest(new MockHttpRequest(), new MockHttpResponse(), null);
+            rateLimitFeature.ProcessRequest(new MockHttpRequest(), new MockHttpResponse(), null);
             called.Should().BeTrue();
         }
     }
