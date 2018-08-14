@@ -17,6 +17,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
+    [Collection("RateLimitFeature")]
     public class RateLimitFeatureTests
     {
         private readonly ILimitKeyGenerator keyGenerator;

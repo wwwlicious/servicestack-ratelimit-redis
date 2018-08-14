@@ -13,6 +13,7 @@ namespace ServiceStack.RateLimit.Redis.Tests.Utilities
     using Web;
     using Xunit;
 
+    [Collection("RateLimitFeature")]
     public class RequestExtensionsTests
     {
         [Theory, InlineAutoData]

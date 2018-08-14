@@ -18,15 +18,13 @@ namespace ServiceStack.RateLimit.Redis.Tests
         
         public RateLimitAppHostFixture()
         {
-            AppHost = new RateLimitAppHost();
+            Apphost = new RateLimitAppHost();
             Apphost.Init();
             BaseUrl = "http://localhost:1337/";
             Apphost.Start(BaseUrl);
             Apphost.StartUpErrors.Should().BeNullOrEmpty();
         }
 
-        public ServiceStackHost AppHost { get; }
-        
         public IServiceClient CreateClient()
         {
             return new JsonServiceClient(BaseUrl);
@@ -73,9 +71,10 @@ namespace ServiceStack.RateLimit.Redis.Tests
 
             var instance = new Redis();
             container.Register(instance);
+            Container.Register<IRedisClientsManager>(new BasicRedisClientManager(instance.Endpoint.ToString()));
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] { new BasicAuthProvider(AppSettings) }, "/home"));
-            Plugins.Add(new RateLimitFeature(new BasicRedisClientManager()));
+            Plugins.Add(new RateLimitFeature(Container.Resolve<IRedisClientsManager>()));
         }
     }
     
