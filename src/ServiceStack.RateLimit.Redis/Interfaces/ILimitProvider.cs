@@ -14,11 +14,5 @@ namespace ServiceStack.RateLimit.Redis.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Limits GetLimits(IRequest request);
-
-        /// <summary>
-        /// Returns the Id of the script Lua script to use for rate limiting
-        /// </summary>
-        /// <returns></returns>
-        string GetRateLimitScriptId();
     }
 }

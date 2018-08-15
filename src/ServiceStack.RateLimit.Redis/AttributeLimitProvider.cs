@@ -11,16 +11,9 @@ namespace ServiceStack.RateLimit.Redis
 
     public class AttributeLimitProvider : ILimitProvider
     {
-        private readonly IAppSettings appSettings;
-
-        public AttributeLimitProvider(IAppSettings appSettings)
-        {
-            this.appSettings = appSettings.ThrowIfNull(nameof(appSettings));
-        }
-
         public Limits GetLimits(IRequest request)
         {
-            if (request.Items.GetValueOrDefault(LimitRateAttribute.RequestItemName) is Limits limits)
+            if (request.Items.GetValueOrDefault(RateLimitAttribute.RequestItemName) is Limits limits)
             {
                 return limits;
             }
@@ -30,11 +23,6 @@ namespace ServiceStack.RateLimit.Redis
                 Request = LimitProviderConstants.DefaultLimits,
                 User = null
             };
-        }
-
-        public string GetRateLimitScriptId()
-        {
-            return appSettings.GetString(LimitProviderConstants.ScriptKey);
         }
     }
 }

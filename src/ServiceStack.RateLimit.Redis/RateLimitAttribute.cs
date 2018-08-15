@@ -1,6 +1,6 @@
-﻿// // This Source Code Form is subject to the terms of the Mozilla Public
-// // License, v. 2.0. If a copy of the MPL was not distributed with this 
-// // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+﻿// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this 
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 namespace ServiceStack.RateLimit.Redis
 {
@@ -10,36 +10,34 @@ namespace ServiceStack.RateLimit.Redis
     using Models;
     using Web;
 
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class LimitRateAttribute : RequestFilterAttribute
+    [AttributeUsage(AttributeTargets.Method|AttributeTargets.Class, AllowMultiple = true)]
+    public class RateLimitAttribute : RequestFilterAttribute
     {
         public const string RequestItemName = "RateLimit.Limits";
 
-        public LimitRateAttribute() : this(LimitType.PerRequest, LimitProviderConstants.DefaultPerMinute,
-            (int) RatePeriod.PerMinute)
+        public RateLimitAttribute() : this(LimitType.PerRequest, LimitProviderConstants.DefaultPerMinute, (int)RatePeriod.PerMinute)
         {
         }
 
-        public LimitRateAttribute(LimitType type) : this(type, LimitProviderConstants.DefaultPerMinute,
-            (int) RatePeriod.PerMinute)
+        public RateLimitAttribute(LimitType type) : this(type, LimitProviderConstants.DefaultPerMinute, (int)RatePeriod.PerMinute)
         {
         }
 
-        public LimitRateAttribute(int limit, int seconds) : this(LimitType.PerRequest, limit, seconds)
+        public RateLimitAttribute(int limit, int seconds) : this(LimitType.PerRequest, limit, seconds)
         {
         }
 
-        public LimitRateAttribute(int limit, RatePeriod period = RatePeriod.PerMinute) : this(LimitType.PerRequest,
+        public RateLimitAttribute(int limit, RatePeriod period = RatePeriod.PerMinute) : this(LimitType.PerRequest,
             limit, (int) period)
         {
         }
 
-        public LimitRateAttribute(LimitType type, int limit, RatePeriod period = RatePeriod.PerMinute) : this(type,
+        public RateLimitAttribute(LimitType type, int limit, RatePeriod period = RatePeriod.PerMinute) : this(type,
             limit, (int) period)
         {
         }
 
-        public LimitRateAttribute(LimitType type, int limit, int seconds)
+        public RateLimitAttribute(LimitType type, int limit, int seconds)
         {
             if (limit <= 0)
             {

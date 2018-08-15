@@ -4,6 +4,7 @@
 namespace ServiceStack.RateLimit.Redis
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.Serialization;
     using Headers;
@@ -11,6 +12,7 @@ namespace ServiceStack.RateLimit.Redis
     using Logging;
     using Models;
     using ServiceStack;
+    using ServiceStack.Configuration;
     using ServiceStack.OrmLite;
     using ServiceStack.Redis;
     using Text;
@@ -48,6 +50,8 @@ namespace ServiceStack.RateLimit.Redis
         /// Provides a variety of unique keys for requests.
         /// </summary>
         public ILimitKeyGenerator KeyGenerator { get; set; }
+        
+        public IAppSettings AppSettings { get; private set; }
 
         private string scriptSha1;
 
@@ -57,23 +61,28 @@ namespace ServiceStack.RateLimit.Redis
 
         public RateLimitFeature(IRedisClientsManager redisClientsManager)
         {
-            redisClientsManager.ThrowIfNull(nameof(redisClientsManager));
-
-            this.redisClientsManager = redisClientsManager;
+            this.redisClientsManager = redisClientsManager.ThrowIfNull(nameof(redisClientsManager));
         }
 
         public void Register(IAppHost appHost)
         {
-            EnsureDependencies(appHost);
-
+            AppSettings = appHost.AppSettings;
+            EnsureDependencies();
             appHost.GlobalRequestFilters.Add(ProcessRequest);
         }
 
         public virtual void ProcessRequest(IRequest request, IResponse response, object obj)
         {
-            var limits = LimitProviders.Select(x => x.GetLimits(request)).ToArray();
+            var reqLimits = new List<LimitPerSecond>();
+            var userLimits = new List<LimitPerSecond>();
+            foreach (var limitProvider in LimitProviders)
+            {
+                var limit = limitProvider.GetLimits(request);
+                if(limit.Request != null) reqLimits.AddRange(limit.Request.Limits);
+                if(limit.User != null) userLimits.AddRange(limit.User.Limits);
+            }
 
-            if (limits.IsEmpty())
+            if (reqLimits.IsEmpty() && userLimits.IsEmpty())
             {
                 // No limits for request, continue
                 log.Debug($"No limits found for request {request.AbsoluteUri}");
@@ -82,8 +91,8 @@ namespace ServiceStack.RateLimit.Redis
 
             var combinedLimits = new Limits
             {
-                User = new LimitGroup { Limits = limits.SelectMany(x => x.User.Limits) },
-                Request = new LimitGroup { Limits = limits.SelectMany(x => x.Request.Limits) }
+                User = new LimitGroup { Limits = userLimits },
+                Request = new LimitGroup { Limits = reqLimits }
             };
             
             var rateLimitResult = GetLimitResult(request, combinedLimits);
@@ -137,9 +146,7 @@ namespace ServiceStack.RateLimit.Redis
                 {
                     // Call lua script to get current hit-rate and overall access/no-access
                     result = client.ExecLuaSha(GetSha1(), new[] { consumerId, requestId }, new[] { args });
-
-                    var rateLimitResult = result.Text.FromJson<RateLimitResult>();
-                    return rateLimitResult;
+                    return result.Text.FromJson<RateLimitResult>();
                 }
                 catch (RedisResponseException e)
                 {
@@ -179,7 +186,7 @@ namespace ServiceStack.RateLimit.Redis
 
         private string GetSha1()
         {
-            var scriptFromConfig = LimitProviders.First().GetRateLimitScriptId();
+            var scriptFromConfig = AppSettings.GetString(LimitProviderConstants.ScriptKey);
             if (!string.IsNullOrWhiteSpace(scriptFromConfig))
             {
                 log.Debug($"Got Lua script sha1 {scriptFromConfig} from config");
@@ -190,11 +197,12 @@ namespace ServiceStack.RateLimit.Redis
             {
                 log.Info("Registering Lua rate limiting script");
                 scriptSha1 = LuaScriptHelpers.RegisterLuaScript(redisClientsManager);
+                AppSettings.Set(LimitProviderConstants.ScriptKey, scriptSha1);
             }
             return scriptSha1;
         }
 
-        private void EnsureDependencies(IAppHost appHost)
+        private void EnsureDependencies()
         {           
             if (KeyGenerator == null)
                 KeyGenerator = new LimitKeyGenerator();
@@ -202,8 +210,8 @@ namespace ServiceStack.RateLimit.Redis
             if (LimitProviders.IsEmpty())
                 LimitProviders = new ILimitProvider[]
                 {
-                    new AppSettingsLimitProvider(KeyGenerator, appHost.AppSettings),
-                    new AttributeLimitProvider(appHost.AppSettings)
+                    new AppSettingsLimitProvider(KeyGenerator, AppSettings),
+                    //new AttributeLimitProvider()
                 };
         }
     }

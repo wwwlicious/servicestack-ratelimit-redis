@@ -51,6 +51,7 @@ namespace DemoService
         private void SetupDependencies()
         {
             // Ubuntu VM running redis
+            // TODO update to use redis-inside? and avoid external dependency requirement for running demo
             var redisConnection = AppSettings.GetString("RedisConnectionString");
             Container.Register<IRedisClientsManager>(new BasicRedisClientManager(redisConnection));
 

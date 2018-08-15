@@ -17,29 +17,17 @@ namespace ServiceStack.RateLimit.Redis.Tests
     [Collection("RateLimitFeature")]
     public class AttributeLimitProviderTests
     {
+        private readonly AttributeLimitProvider limitProvider;
+
         public AttributeLimitProviderTests(RateLimitAppHostFixture fixture)
         {
-            appSetting = new SimpleAppSettings();
-
-            limitProvider = new AttributeLimitProvider(appSetting);
-        }
-
-        private readonly AttributeLimitProvider limitProvider;
-        private readonly IAppSettings appSetting;
-
-        [Theory]
-        [AutoData]
-        public void GetRateLimitScriptId_ReturnsAppSetting(string scriptId)
-        {
-            appSetting.Set(LimitProviderConstants.ScriptKey, scriptId);
-
-            limitProvider.GetRateLimitScriptId().Should().Be(scriptId);
+            limitProvider = new AttributeLimitProvider();
         }
 
         [Fact]
         public void Ctor_ThrowsArgumentNullException_IfAppSettingNull()
         {
-            Action action = () => new AttributeLimitProvider(null);
+            Action action = () => new AttributeLimitProvider();
             action.Should().Throw<ArgumentNullException>();
         }
 
@@ -69,7 +57,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             {
                 Items =
                 {
-                    [LimitRateAttribute.RequestItemName] = new Limits
+                    [RateLimitAttribute.RequestItemName] = new Limits
                     {
                         Request = requestLimits
                     }
@@ -87,7 +75,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             {
                 Items =
                 {
-                    [LimitRateAttribute.RequestItemName] = new Limits
+                    [RateLimitAttribute.RequestItemName] = new Limits
                     {
                         User = userLimits
                     }

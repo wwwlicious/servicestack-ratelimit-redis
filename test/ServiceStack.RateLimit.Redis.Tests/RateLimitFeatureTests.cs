@@ -31,7 +31,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
             
             rateLimitFeature = fixture.Apphost.GetPlugin<RateLimitFeature>();
             
-            rateLimitFeature.LimitProviders.Should().HaveCount(2);
+            //rateLimitFeature.LimitProviders.Should().HaveCount(2);
             rateLimitFeature.KeyGenerator.Should().BeOfType<LimitKeyGenerator>();
         }
 
@@ -42,14 +42,13 @@ namespace ServiceStack.RateLimit.Redis.Tests
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Theory, InlineAutoData]
-        public void ProcessRequest_ExecutesLuaScriptWithLimit(string sha1, RateLimitResult rateLimitResult)
+        [Fact]
+        public void ProcessRequest_ExecutesLuaScriptWithLimit()
         {
-            var mockHttpResponse = new MockHttpResponse();
-            rateLimitFeature.ProcessRequest(new MockHttpRequest(), mockHttpResponse, null);
+            var result = authenticatedClient.Send(new ConfigRateLimitRequest());
 
-            mockHttpResponse.Headers[Redis.Headers.HttpHeaders.RateLimitUser].Should().NotBeNullOrWhiteSpace();
-            mockHttpResponse.Headers[Redis.Headers.HttpHeaders.RateLimitRequest].Should().NotBeNullOrWhiteSpace();
+            result.Request.Headers[Redis.Headers.HttpHeaders.RateLimitUser].Should().NotBeNullOrWhiteSpace();
+            result.Request.Headers[Redis.Headers.HttpHeaders.RateLimitRequest].Should().NotBeNullOrWhiteSpace();
         }
 
         [Fact]

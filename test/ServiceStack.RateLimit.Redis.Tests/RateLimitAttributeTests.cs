@@ -12,14 +12,14 @@ namespace ServiceStack.RateLimit.Redis.Tests
     using Web;
     using Xunit;
 
-    public class LimitRateAttributeTests
+    public class RateLimitAttributeTests
     {
         [Theory]
         [InlineData(-1)]
         [InlineData(0)]
         public void Ctor_ThrowsArgumentNullException_IfLimitZeroOrNegative(int limit)
         {
-            Action action = () => new LimitRateAttribute(limit, 1);
+            Action action = () => new RateLimitAttribute(limit, 1);
             action.Should().Throw<ArgumentOutOfRangeException>();
         }
 
@@ -28,14 +28,14 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [InlineData(0)]
         public void Ctor_ThrowsArgumentNullException_IfSecondsZeroOrNegative(int seconds)
         {
-            Action action = () => new LimitRateAttribute(1, seconds);
+            Action action = () => new RateLimitAttribute(1, seconds);
             action.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [Fact]
         public void Ctor_SetsDefaultLimitAndRate()
         {
-            var attribute = new LimitRateAttribute();
+            var attribute = new RateLimitAttribute();
 
             attribute.Limit.Should().Be(LimitProviderConstants.DefaultPerMinute);
             attribute.Seconds.Should().Be((int) RatePeriod.PerMinute);
@@ -45,7 +45,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void Ctor_SetsLimitAndRate_IfOnlyType()
         {
-            var attribute = new LimitRateAttribute(LimitType.PerUser);
+            var attribute = new RateLimitAttribute(LimitType.PerUser);
 
             attribute.Limit.Should().Be(LimitProviderConstants.DefaultPerMinute);
             attribute.Seconds.Should().Be((int) RatePeriod.PerMinute);
@@ -55,7 +55,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void Ctor_SetsLimitAndRate_IfRatePeriod()
         {
-            var attribute = new LimitRateAttribute(1, RatePeriod.PerSecond);
+            var attribute = new RateLimitAttribute(1, RatePeriod.PerSecond);
 
             attribute.Limit.Should().Be(1);
             attribute.Seconds.Should().Be((int) RatePeriod.PerSecond);
@@ -64,7 +64,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         [Fact]
         public void Ctor_SetsLimitAndRate_IfTypeAndRatePeriod()
         {
-            var attribute = new LimitRateAttribute(LimitType.PerUser, 1, RatePeriod.PerSecond);
+            var attribute = new RateLimitAttribute(LimitType.PerUser, 1, RatePeriod.PerSecond);
 
             attribute.Limit.Should().Be(1);
             attribute.Seconds.Should().Be((int) RatePeriod.PerSecond);
@@ -76,11 +76,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             var request = A.Fake<IRequest>();
             var response = A.Fake<IResponse>();
-            var attribute = new LimitRateAttribute(LimitType.PerRequest, 6, 45);
+            var attribute = new RateLimitAttribute(LimitType.PerRequest, 6, 45);
 
             attribute.Execute(request, response, null);
 
-            request.Items[LimitRateAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
+            request.Items[RateLimitAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
             {
                 Request = new LimitGroup
                 {
@@ -98,11 +98,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
         {
             var request = A.Fake<IRequest>();
             var response = A.Fake<IResponse>();
-            var attribute = new LimitRateAttribute(LimitType.PerUser, 6, 45);
+            var attribute = new RateLimitAttribute(LimitType.PerUser, 6, 45);
 
             attribute.Execute(request, response, null);
 
-            request.Items[LimitRateAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
+            request.Items[RateLimitAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
             {
                 Request = null,
                 User = new LimitGroup
@@ -119,7 +119,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Execute_AddsNextRequestLimit_IfRequestLimits()
         {
             var request = A.Fake<IRequest>();
-            request.Items.Add(LimitRateAttribute.RequestItemName, new Limits
+            request.Items.Add(RateLimitAttribute.RequestItemName, new Limits
             {
                 Request = new LimitGroup
                 {
@@ -130,11 +130,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
                 }
             });
             var response = A.Fake<IResponse>();
-            var attribute = new LimitRateAttribute(LimitType.PerRequest, 6, 45);
+            var attribute = new RateLimitAttribute(LimitType.PerRequest, 6, 45);
 
             attribute.Execute(request, response, null);
 
-            request.Items[LimitRateAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
+            request.Items[RateLimitAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
             {
                 Request = new LimitGroup
                 {
@@ -151,7 +151,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Execute_AddsNextUserLimit_IfBothLimits()
         {
             var request = A.Fake<IRequest>();
-            request.Items.Add(LimitRateAttribute.RequestItemName, new Limits
+            request.Items.Add(RateLimitAttribute.RequestItemName, new Limits
             {
                 Request = new LimitGroup
                 {
@@ -169,11 +169,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
                 }
             });
             var response = A.Fake<IResponse>();
-            var attribute = new LimitRateAttribute(LimitType.PerUser, 6, 45);
+            var attribute = new RateLimitAttribute(LimitType.PerUser, 6, 45);
 
             attribute.Execute(request, response, null);
 
-            request.Items[LimitRateAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
+            request.Items[RateLimitAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
             {
                 Request = new LimitGroup
                 {
@@ -197,7 +197,7 @@ namespace ServiceStack.RateLimit.Redis.Tests
         public void Execute_AddsNextUserLimit_IfUserLimits()
         {
             var request = A.Fake<IRequest>();
-            request.Items.Add(LimitRateAttribute.RequestItemName, new Limits
+            request.Items.Add(RateLimitAttribute.RequestItemName, new Limits
             {
                 Request = null,
                 User = new LimitGroup
@@ -209,11 +209,11 @@ namespace ServiceStack.RateLimit.Redis.Tests
                 }
             });
             var response = A.Fake<IResponse>();
-            var attribute = new LimitRateAttribute(LimitType.PerUser, 6, 45);
+            var attribute = new RateLimitAttribute(LimitType.PerUser, 6, 45);
 
             attribute.Execute(request, response, null);
 
-            request.Items[LimitRateAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
+            request.Items[RateLimitAttribute.RequestItemName].Should().BeEquivalentTo(new Limits
             {
                 User = new LimitGroup
                 {
